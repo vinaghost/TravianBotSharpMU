@@ -59,6 +59,9 @@
     <None Update="Tests\Parser\NavigationBar\HtmlFiles\TTWars.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="Tests\Parser\Option\HtmlFiles\TravianOfficial.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="Tests\Parser\RightBar\HtmlFiles\TravianOfficial.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

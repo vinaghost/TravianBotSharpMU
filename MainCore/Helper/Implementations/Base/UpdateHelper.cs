@@ -55,6 +55,7 @@ namespace MainCore.Helper.Implementations.Base
             UpdateAccountInfo(accountId);
 
             UpdateHeroInfo(accountId);
+            TriggerHeroPoint(accountId);
 
             UpdateVillageList(accountId);
 
@@ -681,6 +682,23 @@ namespace MainCore.Helper.Implementations.Base
                 }
                 _taskManager.Add<NPCTask>(accountId, villageId);
             }
+        }
+
+        private void TriggerHeroPoint(int accountId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            var setting = context.AccountsSettings.Find(accountId);
+            if (!setting.IsAutoHeroPoint) return;
+            var chromeBrowser = _chromeManager.Get(accountId);
+            var html = chromeBrowser.GetHtml();
+            var isLevelUp = _heroSectionParser.IsLevelUp(html);
+            if (!isLevelUp) return;
+
+            var listTask = _taskManager.GetList(accountId);
+            var tasks = listTask.OfType<HeroPointTask>();
+            if (tasks.Any()) return;
+
+            _taskManager.Add<HeroPointTask>(accountId);
         }
     }
 }

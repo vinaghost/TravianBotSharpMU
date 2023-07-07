@@ -14,5 +14,10 @@ namespace MainCore.Parsers.Implementations.TTWars
         {
             throw new System.NotImplementedException();
         }
+
+        public HtmlNode GetSaveButton(HtmlDocument doc)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }

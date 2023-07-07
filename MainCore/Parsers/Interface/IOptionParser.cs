@@ -6,5 +6,6 @@ namespace MainCore.Parsers.Interface
     {
         HtmlNode GetContextualHelpCheckBox(HtmlDocument doc);
         HtmlNode GetOptionsButton(HtmlDocument doc);
+        HtmlNode GetSaveButton(HtmlDocument doc);
     }
 }

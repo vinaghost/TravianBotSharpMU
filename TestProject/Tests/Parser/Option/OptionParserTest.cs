@@ -54,5 +54,17 @@ namespace TestProject.Tests.Parser.Option
             var node = _instance[index].GetContextualHelpCheckBox(_doc);
             Assert.IsNotNull(node);
         }
+
+        [DataTestMethod]
+        [DataRow(VersionEnums.TravianOfficial)]
+        public void GetSaveButtonTest(VersionEnums version)
+        {
+            var index = (int)version;
+            var file = Path.Combine(_path, $"{_version[index]}.html");
+            _doc.Load(file);
+
+            var node = _instance[index].GetSaveButton(_doc);
+            Assert.IsNotNull(node);
+        }
     }
 }

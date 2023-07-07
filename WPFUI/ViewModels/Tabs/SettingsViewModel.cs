@@ -80,12 +80,52 @@ namespace WPFUI.ViewModels.Tabs
             set => this.RaiseAndSetIfChanged(ref _isMinimized, value);
         }
 
-        private bool _IsAutoStartAdventure;
+        private bool _isAutoStartAdventure;
 
         public bool IsAutoStartAdventure
         {
-            get => _IsAutoStartAdventure;
-            set => this.RaiseAndSetIfChanged(ref _IsAutoStartAdventure, value);
+            get => _isAutoStartAdventure;
+            set => this.RaiseAndSetIfChanged(ref _isAutoStartAdventure, value);
+        }
+
+        private bool _isAutoSetPoint;
+
+        public bool IsAutoSetPoint
+        {
+            get => _isAutoSetPoint;
+            set => this.RaiseAndSetIfChanged(ref _isAutoSetPoint, value);
+        }
+
+        private int _fightingPoint;
+
+        public int FightingPoint
+        {
+            get => _fightingPoint;
+            set => this.RaiseAndSetIfChanged(ref _fightingPoint, value);
+        }
+
+        private int _offBonusPoint;
+
+        public int OffBonusPoint
+        {
+            get => _offBonusPoint;
+            set => this.RaiseAndSetIfChanged(ref _offBonusPoint, value);
+        }
+
+        private int _defBonusPoint;
+
+        public int DefBonusPoint
+        {
+            get => _defBonusPoint;
+            set => this.RaiseAndSetIfChanged(ref _defBonusPoint, value);
+        }
+
+        private int _resourcePoint;
+
+        public int ResourcePoint
+        {
+            get => _resourcePoint;
+            set => this.RaiseAndSetIfChanged(ref _resourcePoint, value);
         }
 
         protected override void Init(int accountId)
@@ -107,6 +147,11 @@ namespace WPFUI.ViewModels.Tabs
                 IsDontLoadImage = settings.IsDontLoadImage;
                 IsMinimized = settings.IsMinimized;
                 IsAutoStartAdventure = settings.IsAutoAdventure;
+                IsAutoSetPoint = settings.IsAutoHeroPoint;
+                FightingPoint = settings.HeroFightingPoint;
+                OffBonusPoint = settings.HeroOffPoint;
+                DefBonusPoint = settings.HeroDefPoint;
+                ResourcePoint = settings.HeroResourcePoint;
             });
 
             ClickDelay.LoadData(settings.ClickDelayMin, settings.ClickDelayMax);
@@ -117,6 +162,7 @@ namespace WPFUI.ViewModels.Tabs
 
         private async Task SaveTask()
         {
+            if (!IsSettingValid()) return;
             _waitingOverlay.ShowCommand.Execute("saving account's settings").Subscribe();
 
             await Task.Run(() =>
@@ -195,6 +241,10 @@ namespace WPFUI.ViewModels.Tabs
             accountSetting.IsDontLoadImage = IsDontLoadImage;
             accountSetting.IsMinimized = IsMinimized;
             accountSetting.IsAutoAdventure = IsAutoStartAdventure;
+            accountSetting.IsAutoHeroPoint = IsAutoSetPoint;
+            accountSetting.HeroFightingPoint = FightingPoint;
+            accountSetting.HeroOffPoint = OffBonusPoint;
+            accountSetting.HeroDefPoint = DefBonusPoint;
 
             (accountSetting.ClickDelayMin, accountSetting.ClickDelayMax) = ClickDelay.GetData();
             (accountSetting.TaskDelayMin, accountSetting.TaskDelayMax) = TaskDelay.GetData();
@@ -208,25 +258,36 @@ namespace WPFUI.ViewModels.Tabs
             context.SaveChanges();
         }
 
+        private bool IsSettingValid()
+        {
+            var sumHeroPoint = FightingPoint + OffBonusPoint + DefBonusPoint + ResourcePoint;
+            if (sumHeroPoint != 4)
+            {
+                MessageBox.Show("Sum of hero point settings must be 4.", "Warning");
+                return false;
+            }
+            return true;
+        }
+
         private void TaskBasedSetting(int index)
         {
             var tasks = _taskManager.GetList(index);
-            var task = tasks.OfType<UpdateAdventures>().FirstOrDefault();
+            var taskUpdateAdventures = tasks.OfType<UpdateAdventures>().FirstOrDefault();
             if (IsAutoStartAdventure)
             {
-                if (task is null)
+                if (taskUpdateAdventures is null)
                 {
                     _taskManager.Add<UpdateAdventures>(index);
                 }
                 else
                 {
-                    task.ExecuteAt = DateTime.Now;
+                    taskUpdateAdventures.ExecuteAt = DateTime.Now;
                     _taskManager.ReOrder(index);
                 }
             }
             else
             {
-                if (task is not null) _taskManager.Remove(index, task);
+                if (taskUpdateAdventures is not null) _taskManager.Remove(index, taskUpdateAdventures);
             }
         }
 

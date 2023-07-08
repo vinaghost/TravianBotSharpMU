@@ -564,6 +564,7 @@ namespace MainCore
                 KeyValuePair.Create(202304281723,"AutoTrainTroopFixed"),
                 KeyValuePair.Create(202305052234,"AutoTrainTroopTimeDelay"),
                 KeyValuePair.Create(202306061739,"AutoTrainTroopMaxTrain"),
+                KeyValuePair.Create(202307062300,"ContextualHelp"),
             };
             foreach (var migration in migrations)
             {

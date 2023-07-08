@@ -106,6 +106,15 @@ namespace MainCore.Helper.Implementations.Base
                 return Result.Fail(new Retry("Cannot find save button"));
             }
 
+            _generalHelper.DelayClick(accountId);
+
+            result = _generalHelper.Wait(accountId, (driver) =>
+            {
+                saveButton = _heroSectionParser.GetSaveButton(html);
+                var element = driver.FindElement(By.XPath(saveButton.XPath));
+                return element.Displayed && element.Enabled;
+            });
+
             result = _generalHelper.Click(accountId, By.XPath(saveButton.XPath));
             if (result.IsFailed) return result.WithError(new Trace(Trace.TraceMessage()));
             return Result.Ok();

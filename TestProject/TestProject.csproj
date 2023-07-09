@@ -44,6 +44,9 @@
     <None Update="Tests\Parser\HeroSection\HtmlFiles\TravianOfficial_inventory.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="Tests\Parser\HeroSection\HtmlFiles\TravianOfficial_levelup.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="Tests\Parser\HeroSection\HtmlFiles\TTWars_adventures.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

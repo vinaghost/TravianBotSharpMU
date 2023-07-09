@@ -48,6 +48,56 @@ namespace MainCore.Parsers.Implementations.TravianOfficial
             };
         }
 
+        public bool IsLevelUp(HtmlDocument doc)
+        {
+            var topBarHero = doc.GetElementbyId("topBarHero");
+            if (topBarHero is null) return false;
+            var levelUp = topBarHero.Descendants("i").FirstOrDefault(x => x.HasClass("levelUp"));
+            if (levelUp is null) return false;
+            return levelUp.HasClass("show");
+        }
+
+        public int GetAvailablePoint(HtmlDocument doc)
+        {
+            var heroAttributes = doc.DocumentNode.Descendants("div").FirstOrDefault(x => x.HasClass("heroAttributes"));
+            if (heroAttributes is null) return 0;
+            var availablePoint = heroAttributes.Descendants("div").FirstOrDefault(x => x.HasClass("pointsAvailable"));
+            if (availablePoint is null) return 0;
+            var valueStr = new string(availablePoint.InnerText.Where(c => char.IsDigit(c)).ToArray());
+            if (string.IsNullOrEmpty(valueStr)) return 0;
+            return int.Parse(valueStr);
+        }
+
+        public HtmlNode GetFightingStrengthInputBox(HtmlDocument doc)
+        {
+            var inputBox = doc.DocumentNode.Descendants("input").FirstOrDefault(x => x.GetAttributeValue("name", "") == "fightingStrength");
+            return inputBox;
+        }
+
+        public HtmlNode GetOffBonusInputBox(HtmlDocument doc)
+        {
+            var inputBox = doc.DocumentNode.Descendants("input").FirstOrDefault(x => x.GetAttributeValue("name", "") == "offBonus");
+            return inputBox;
+        }
+
+        public HtmlNode GetDefBonusInputBox(HtmlDocument doc)
+        {
+            var inputBox = doc.DocumentNode.Descendants("input").FirstOrDefault(x => x.GetAttributeValue("name", "") == "defBonus");
+            return inputBox;
+        }
+
+        public HtmlNode GetResourceProductionInputBox(HtmlDocument doc)
+        {
+            var inputBox = doc.DocumentNode.Descendants("input").FirstOrDefault(x => x.GetAttributeValue("name", "") == "resourceProduction");
+            return inputBox;
+        }
+
+        public HtmlNode GetSaveButton(HtmlDocument doc)
+        {
+            var button = doc.GetElementbyId("savePoints");
+            return button;
+        }
+
         public int GetAdventureNum(HtmlDocument doc)
         {
             var adv45 = doc.DocumentNode.Descendants("a").FirstOrDefault(x => x.HasClass("adventure"));

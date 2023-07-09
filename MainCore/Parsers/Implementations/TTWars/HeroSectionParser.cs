@@ -204,5 +204,40 @@ namespace MainCore.Parsers.Implementations.TTWars
             }
             return null;
         }
+
+        public bool IsLevelUp(HtmlDocument doc)
+        {
+            throw new NotImplementedException();
+        }
+
+        public HtmlNode GetResourceProductionInputBox(HtmlDocument doc)
+        {
+            throw new NotImplementedException();
+        }
+
+        public HtmlNode GetDefBonusInputBox(HtmlDocument doc)
+        {
+            throw new NotImplementedException();
+        }
+
+        public HtmlNode GetOffBonusInputBox(HtmlDocument doc)
+        {
+            throw new NotImplementedException();
+        }
+
+        public HtmlNode GetFightingStrengthInputBox(HtmlDocument doc)
+        {
+            throw new NotImplementedException();
+        }
+
+        public int GetAvailablePoint(HtmlDocument doc)
+        {
+            throw new NotImplementedException();
+        }
+
+        public HtmlNode GetSaveButton(HtmlDocument doc)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

@@ -36,6 +36,11 @@ namespace WPFUI.Views.Tabs
                 this.Bind(ViewModel, vm => vm.IsMinimized, v => v.MinimizedCheckBox.IsChecked).DisposeWith(d);
 
                 this.Bind(ViewModel, vm => vm.IsAutoStartAdventure, v => v.AutoStartAdventureCheckBox.IsChecked).DisposeWith(d);
+                this.Bind(ViewModel, vm => vm.IsAutoSetPoint, v => v.AutoSetPointCheckBox.IsChecked).DisposeWith(d);
+                this.Bind(ViewModel, vm => vm.FightingPoint, v => v.Fighting.Value).DisposeWith(d);
+                this.Bind(ViewModel, vm => vm.OffBonusPoint, v => v.OffBonus.Value).DisposeWith(d);
+                this.Bind(ViewModel, vm => vm.DefBonusPoint, v => v.DefBonus.Value).DisposeWith(d);
+                this.Bind(ViewModel, vm => vm.ResourcePoint, v => v.Resource.Value).DisposeWith(d);
             });
         }
     }

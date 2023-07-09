@@ -58,6 +58,18 @@ namespace TestProject.Tests.Parser.HeroSection
         }
 
         [DataTestMethod]
+        [DataRow(VersionEnums.TravianOfficial, true)]
+        public void IsLevelTest(VersionEnums version, bool expected)
+        {
+            var index = (int)version;
+            var file = Path.Combine(_path, $"{_version[index]}_levelup.html");
+            _doc.Load(file);
+
+            var actual = _instance[index].IsLevelUp(_doc);
+            Assert.AreEqual(expected, actual);
+        }
+
+        [DataTestMethod]
         [DataRow(VersionEnums.TravianOfficial, 1)]
         [DataRow(VersionEnums.TTWars, 2)]
         public void GetAdventureNumTest(VersionEnums version, int expected)

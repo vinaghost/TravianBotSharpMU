@@ -35,7 +35,7 @@ namespace MainCore.Helper.Interface
         Result ToDorf1(int accountId, int villageId, bool forceReload = false, bool switchVillage = false);
 
         Result ToDorf2(int accountId, int villageId, bool forceReload = false, bool switchVillage = false);
-
+        Result ToHeroAttributes(int accountId);
         Result ToHeroInventory(int accountId);
 
         Result Wait(int accountId, Func<IWebDriver, bool> condition);

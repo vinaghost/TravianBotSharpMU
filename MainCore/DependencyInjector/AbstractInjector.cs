@@ -48,6 +48,7 @@ namespace MainCore.DependencyInjector
             services.AddSingleton<IBuildingsHelper, BuildingsHelper>();
 
             services.AddSingleton<IHeroPointHelper, HeroPointHelper>();
+            services.AddSingleton<IHeroReviveHelper, HeroReviveHelper>();
 
             return services;
         }

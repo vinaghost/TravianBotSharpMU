@@ -239,5 +239,15 @@ namespace MainCore.Parsers.Implementations.TTWars
         {
             throw new NotImplementedException();
         }
+
+        public int[] GetRevivedResource(HtmlDocument doc)
+        {
+            throw new NotImplementedException();
+        }
+
+        long[] IHeroSectionParser.GetRevivedResource(HtmlDocument doc)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

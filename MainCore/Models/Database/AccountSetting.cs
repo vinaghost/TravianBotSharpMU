@@ -23,5 +23,9 @@
         public int HeroOffPoint { get; set; }
         public int HeroDefPoint { get; set; }
         public int HeroResourcePoint { get; set; }
+
+        public bool IsAutoHeroRevive { get; set; }
+        public int HeroReviveVillageId { get; set; }
+        public bool IsUseHeroResToRevive { get; set; }
     }
 }

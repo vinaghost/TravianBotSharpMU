@@ -265,5 +265,32 @@ namespace MainCore.Parsers.Implementations.TravianOfficial
             }
             return null;
         }
+
+        public long[] GetRevivedResource(HtmlDocument doc)
+        {
+            var reviveWrapper = doc.DocumentNode.Descendants("div").FirstOrDefault(x => x.HasClass("reviveWrapper"));
+            if (reviveWrapper is null) return Array.Empty<long>();
+            var reviveWithResources = reviveWrapper.Descendants("div").FirstOrDefault(x => x.HasClass("reviveWithResources") && x.HasClass("charges"));
+            if (reviveWithResources is null) return Array.Empty<long>();
+
+            var resourceDivs = reviveWithResources.Descendants("div").Where(x => x.HasClass("resource")).Take(4);
+            if (!resourceDivs.Any()) return Array.Empty<long>();
+
+            var resources = new long[4];
+            for (var i = 0; i < 4; i++)
+            {
+                var resourceDiv = resourceDivs.ElementAt(i);
+                var resourceValue = resourceDiv.Descendants("span").FirstOrDefault();
+                if (resourceValue is null)
+                {
+                    resources[i] = 0;
+                    continue;
+                }
+                var resourceValueStr = new string(resourceValue.InnerText.Where(c => char.IsDigit(c)).ToArray());
+                if (string.IsNullOrEmpty(resourceValueStr)) continue;
+                resources[i] = long.Parse(resourceValueStr);
+            }
+            return resources;
+        }
     }
 }

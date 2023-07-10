@@ -56,6 +56,7 @@ namespace MainCore.Helper.Implementations.Base
 
             UpdateHeroInfo(accountId);
             TriggerHeroPoint(accountId);
+            TriggerHeroRevive(accountId);
 
             UpdateVillageList(accountId);
 
@@ -701,6 +702,22 @@ namespace MainCore.Helper.Implementations.Base
             if (tasks.Any()) return;
 
             _taskManager.Add<HeroPointTask>(accountId);
+        }
+
+        private void TriggerHeroRevive(int accountId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            var setting = context.AccountsSettings.Find(accountId);
+            if (!setting.IsAutoHeroRevive) return;
+
+            var hero = context.Heroes.Find(accountId);
+            if (hero.Status != HeroStatusEnums.Dead) return;
+
+            var listTask = _taskManager.GetList(accountId);
+            var tasks = listTask.OfType<HeroReviveTask>();
+            if (tasks.Any()) return;
+
+            _taskManager.Add<HeroReviveTask>(accountId);
         }
     }
 }

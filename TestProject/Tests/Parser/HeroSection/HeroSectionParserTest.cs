@@ -243,5 +243,33 @@ namespace TestProject.Tests.Parser.HeroSection
             var actual = _instance[index].GetConfirmButton(_doc);
             Assert.IsNotNull(actual);
         }
+
+        [DataTestMethod]
+        [DataRow(VersionEnums.TravianOfficial, 240, 380, 270, 160)]
+        public void GetRevivedResourceTest(VersionEnums version, int wood, int clay, int iron, int crop)
+        {
+            var index = (int)version;
+            var file = Path.Combine(_path, $"{_version[index]}_herorevive.html");
+            _doc.Load(file);
+
+            var actual = _instance[index].GetRevivedResource(_doc);
+            Assert.IsTrue(actual.Any());
+            Assert.AreEqual(wood, actual[0]);
+            Assert.AreEqual(clay, actual[1]);
+            Assert.AreEqual(iron, actual[2]);
+            Assert.AreEqual(crop, actual[3]);
+        }
+
+        [DataTestMethod]
+        [DataRow(VersionEnums.TravianOfficial)]
+        public void GetReviveButtonTest(VersionEnums version)
+        {
+            var index = (int)version;
+            var file = Path.Combine(_path, $"{_version[index]}_herorevive.html");
+            _doc.Load(file);
+
+            var actual = _instance[index].GetReviveButton(_doc);
+            Assert.IsNotNull(actual);
+        }
     }
 }

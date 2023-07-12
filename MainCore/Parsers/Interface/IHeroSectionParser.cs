@@ -48,5 +48,8 @@ namespace MainCore.Parsers.Interface
         int GetAvailablePoint(HtmlDocument doc);
 
         HtmlNode GetSaveButton(HtmlDocument doc);
+
+        long[] GetRevivedResource(HtmlDocument doc);
+        HtmlNode GetReviveButton(HtmlDocument doc);
     }
 }

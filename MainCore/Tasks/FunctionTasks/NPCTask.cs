@@ -15,11 +15,13 @@ namespace MainCore.Tasks.FunctionTasks
     {
         private readonly INPCHelper _npcHelper;
         private readonly ITaskManager _taskManager;
+        private readonly IHeroReviveHelper _heroReviveHelper;
 
         public NPCTask(int villageId, int accountId, CancellationToken cancellationToken = default) : base(villageId, accountId, cancellationToken)
         {
             _npcHelper = Locator.Current.GetService<INPCHelper>();
             _taskManager = Locator.Current.GetService<ITaskManager>();
+            _heroReviveHelper = Locator.Current.GetService<IHeroReviveHelper>();
         }
 
         public NPCTask(int villageId, int accountId, Resources ratio, CancellationToken cancellationToken = default) : this(villageId, accountId, cancellationToken)
@@ -56,14 +58,23 @@ namespace MainCore.Tasks.FunctionTasks
             if (upgradeTask is not null)
             {
                 upgradeTask.ExecuteAt = DateTime.Now;
-                _taskManager.ReOrder(AccountId);
             }
             var trainTroopTask = tasks.OfType<TrainTroopsTask>().FirstOrDefault(x => x.VillageId == VillageId);
             if (trainTroopTask is not null)
             {
                 trainTroopTask.ExecuteAt = DateTime.Now;
-                _taskManager.ReOrder(AccountId);
             }
+
+            var reviveVillage = _heroReviveHelper.GetVillageRevive(AccountId);
+            if (reviveVillage == VillageId)
+            {
+                var reviveTask = tasks.OfType<HeroReviveTask>().FirstOrDefault();
+                if (reviveTask is not null)
+                {
+                    reviveTask.ExecuteAt = DateTime.Now;
+                }
+            }
+            _taskManager.ReOrder(AccountId);
         }
     }
 }

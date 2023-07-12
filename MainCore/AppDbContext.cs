@@ -245,7 +245,10 @@ namespace MainCore
                 HeroFightingPoint = 1,
                 HeroOffPoint = 0,
                 HeroDefPoint = 0,
-                HeroResourcePoint = 4,
+                HeroResourcePoint = 3,
+                IsAutoHeroRevive = false,
+                HeroReviveVillageId = -1,
+                IsUseHeroResToRevive = false,
             });
             Heroes.Add(new Hero { AccountId = accountId });
 
@@ -571,6 +574,7 @@ namespace MainCore
                 KeyValuePair.Create(202306061739,"AutoTrainTroopMaxTrain"),
                 KeyValuePair.Create(202307062300,"ContextualHelp"),
                 KeyValuePair.Create(202307071634,"HeroPoint"),
+                KeyValuePair.Create(202307102106,"HeroRevive"),
             };
             foreach (var migration in migrations)
             {

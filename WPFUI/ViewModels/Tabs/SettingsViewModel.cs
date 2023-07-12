@@ -1,4 +1,5 @@
-﻿using MainCore;
+﻿using DynamicData;
+using MainCore;
 using MainCore.Enums;
 using MainCore.Services.Interface;
 using MainCore.Tasks.UpdateTasks;
@@ -128,6 +129,32 @@ namespace WPFUI.ViewModels.Tabs
             set => this.RaiseAndSetIfChanged(ref _resourcePoint, value);
         }
 
+        private bool _isAutoHeroRevive;
+
+        public bool IsAutoHeroRevive
+        {
+            get => _isAutoHeroRevive;
+            set => this.RaiseAndSetIfChanged(ref _isAutoHeroRevive, value);
+        }
+
+        private bool _isUseHeroResourceRevive;
+
+        public bool IsUseHeroResourceRevive
+        {
+            get => _isUseHeroResourceRevive;
+            set => this.RaiseAndSetIfChanged(ref _isUseHeroResourceRevive, value);
+        }
+
+        private VillageComboBox _selectedReviveVillage;
+
+        public VillageComboBox SelectedReviveVillage
+        {
+            get => _selectedReviveVillage;
+            set => this.RaiseAndSetIfChanged(ref _selectedReviveVillage, value);
+        }
+
+        public ObservableCollection<VillageComboBox> ReviveVillages { get; } = new();
+
         protected override void Init(int accountId)
         {
             LoadData(accountId);
@@ -139,6 +166,14 @@ namespace WPFUI.ViewModels.Tabs
             var settings = context.AccountsSettings.Find(index);
             var info = context.AccountsInfo.Find(index);
 
+            var reviveVillages = context.Villages.Where(x => x.AccountId == index).Select(x => new VillageComboBox() { Id = x.Id, Name = x.Name }).ToList();
+            if (!reviveVillages.Any())
+            {
+                settings.HeroReviveVillageId = -1;
+                context.Update(settings);
+                context.SaveChanges();
+                reviveVillages.Add(new VillageComboBox() { Id = -1, Name = "No village" });
+            }
             RxApp.MainThreadScheduler.Schedule(() =>
             {
                 SelectedTribe = Tribes.FirstOrDefault(x => x.Tribe == info.Tribe);
@@ -152,6 +187,13 @@ namespace WPFUI.ViewModels.Tabs
                 OffBonusPoint = settings.HeroOffPoint;
                 DefBonusPoint = settings.HeroDefPoint;
                 ResourcePoint = settings.HeroResourcePoint;
+
+                IsAutoHeroRevive = settings.IsAutoHeroRevive;
+                IsUseHeroResourceRevive = settings.IsUseHeroResToRevive;
+
+                ReviveVillages.Clear();
+                ReviveVillages.AddRange(reviveVillages);
+                SelectedReviveVillage = ReviveVillages.FirstOrDefault(x => x.Id == settings.HeroReviveVillageId) ?? ReviveVillages.First();
             });
 
             ClickDelay.LoadData(settings.ClickDelayMin, settings.ClickDelayMax);
@@ -245,6 +287,9 @@ namespace WPFUI.ViewModels.Tabs
             accountSetting.HeroFightingPoint = FightingPoint;
             accountSetting.HeroOffPoint = OffBonusPoint;
             accountSetting.HeroDefPoint = DefBonusPoint;
+            accountSetting.IsAutoHeroRevive = IsAutoHeroRevive;
+            accountSetting.IsUseHeroResToRevive = IsUseHeroResourceRevive;
+            accountSetting.HeroReviveVillageId = SelectedReviveVillage?.Id ?? -1;
 
             (accountSetting.ClickDelayMin, accountSetting.ClickDelayMax) = ClickDelay.GetData();
             (accountSetting.TaskDelayMin, accountSetting.TaskDelayMax) = TaskDelay.GetData();
@@ -260,12 +305,25 @@ namespace WPFUI.ViewModels.Tabs
 
         private bool IsSettingValid()
         {
-            var sumHeroPoint = FightingPoint + OffBonusPoint + DefBonusPoint + ResourcePoint;
-            if (sumHeroPoint != 4)
+            if (IsAutoSetPoint)
             {
-                MessageBox.Show("Sum of hero point settings must be 4.", "Warning");
-                return false;
+                var sumHeroPoint = FightingPoint + OffBonusPoint + DefBonusPoint + ResourcePoint;
+                if (sumHeroPoint != 4)
+                {
+                    MessageBox.Show("Sum of hero point settings must be 4.", "Warning");
+                    return false;
+                }
             }
+
+            if (IsAutoHeroRevive)
+            {
+                if (SelectedReviveVillage is not null && SelectedReviveVillage.Id == -1)
+                {
+                    MessageBox.Show("Auto revive hero village must be set", "Warning");
+                    return false;
+                }
+            }
+
             return true;
         }
 

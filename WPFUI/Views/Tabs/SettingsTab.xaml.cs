@@ -41,6 +41,10 @@ namespace WPFUI.Views.Tabs
                 this.Bind(ViewModel, vm => vm.OffBonusPoint, v => v.OffBonus.Value).DisposeWith(d);
                 this.Bind(ViewModel, vm => vm.DefBonusPoint, v => v.DefBonus.Value).DisposeWith(d);
                 this.Bind(ViewModel, vm => vm.ResourcePoint, v => v.Resource.Value).DisposeWith(d);
+                this.Bind(ViewModel, vm => vm.IsAutoHeroRevive, v => v.AutoReviveHero.IsChecked).DisposeWith(d);
+                this.Bind(ViewModel, vm => vm.IsUseHeroResourceRevive, v => v.AutoReviveHeroWithHeroResource.IsChecked).DisposeWith(d);
+                this.OneWayBind(ViewModel, vm => vm.ReviveVillages, v => v.ReviveVillage.ItemsSource).DisposeWith(d);
+                this.Bind(ViewModel, vm => vm.SelectedReviveVillage, v => v.ReviveVillage.SelectedItem).DisposeWith(d);
             });
         }
     }

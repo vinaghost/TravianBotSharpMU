@@ -249,5 +249,10 @@ namespace MainCore.Parsers.Implementations.TTWars
         {
             throw new NotImplementedException();
         }
+
+        public HtmlNode GetReviveButton(HtmlDocument doc)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

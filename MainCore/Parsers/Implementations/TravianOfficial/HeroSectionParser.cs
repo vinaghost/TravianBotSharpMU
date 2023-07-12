@@ -292,5 +292,13 @@ namespace MainCore.Parsers.Implementations.TravianOfficial
             }
             return resources;
         }
+
+        public HtmlNode GetReviveButton(HtmlDocument doc)
+        {
+            var reviveWrapper = doc.DocumentNode.Descendants("div").FirstOrDefault(x => x.HasClass("reviveWrapper"));
+            if (reviveWrapper is null) return null;
+            var reviveWithResourcesButton = reviveWrapper.Descendants("button").FirstOrDefault(x => x.HasClass("reviveWithResources") && x.HasClass("green"));
+            return reviveWithResourcesButton;
+        }
     }
 }

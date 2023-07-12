@@ -5,6 +5,7 @@ using MainCore.Models.Runtime;
 using MainCore.Parsers.Interface;
 using MainCore.Services.Interface;
 using Microsoft.EntityFrameworkCore;
+using OpenQA.Selenium;
 using System.Linq;
 
 namespace MainCore.Helper.Implementations.Base
@@ -39,6 +40,10 @@ namespace MainCore.Helper.Implementations.Base
 
             result = CheckResource(accountId, villageId);
             if (result.IsFailed) return result.WithError(new Trace(Trace.TraceMessage()));
+
+            result = ClickReviveButton(accountId);
+            if (result.IsFailed) return result.WithError(new Trace(Trace.TraceMessage()));
+
             return Result.Ok();
         }
 
@@ -70,13 +75,30 @@ namespace MainCore.Helper.Implementations.Base
             var setting = context.AccountsSettings.Find(accountId);
             if (!setting.IsUseHeroResToRevive) return Result.Fail(NoResource.ReviveHero(resNeed));
 
+            var chromeBrowser = _chromeManager.Get(accountId);
+            var buildingUrl = chromeBrowser.GetCurrentUrl();
+
             var result = _generalHelper.ToHeroInventory(accountId);
             if (result.IsFailed) return result.WithError(new Trace(Trace.TraceMessage()));
 
             result = _heroResourcesHelper.FillResource(accountId, villageId, resNeed - resCurrent);
             if (result.IsFailed) return result.WithError(new Trace(Trace.TraceMessage()));
 
-            result = _generalHelper.ToHeroAttributes(accountId);
+            result = _generalHelper.Navigate(accountId, buildingUrl);
+            if (result.IsFailed) return result.WithError(new Trace(Trace.TraceMessage()));
+
+            return Result.Ok();
+        }
+
+        private Result ClickReviveButton(int accountId)
+        {
+            var chromeBrowser = _chromeManager.Get(accountId);
+            var html = chromeBrowser.GetHtml();
+
+            var button = _heroSectionParser.GetReviveButton(html);
+            if (button is null) return Result.Fail(new Skip("No revive button"));
+
+            var result = _generalHelper.Click(accountId, By.XPath(button.XPath));
             if (result.IsFailed) return result.WithError(new Trace(Trace.TraceMessage()));
             return Result.Ok();
         }

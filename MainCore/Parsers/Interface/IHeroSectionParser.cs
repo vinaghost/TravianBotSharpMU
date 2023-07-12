@@ -50,5 +50,6 @@ namespace MainCore.Parsers.Interface
         HtmlNode GetSaveButton(HtmlDocument doc);
 
         long[] GetRevivedResource(HtmlDocument doc);
+        HtmlNode GetReviveButton(HtmlDocument doc);
     }
 }

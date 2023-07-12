@@ -249,7 +249,7 @@ namespace TestProject.Tests.Parser.HeroSection
         public void GetRevivedResourceTest(VersionEnums version, int wood, int clay, int iron, int crop)
         {
             var index = (int)version;
-            var file = Path.Combine(_path, $"{_version[index]}_herorevive_resource.html");
+            var file = Path.Combine(_path, $"{_version[index]}_herorevive.html");
             _doc.Load(file);
 
             var actual = _instance[index].GetRevivedResource(_doc);
@@ -258,6 +258,18 @@ namespace TestProject.Tests.Parser.HeroSection
             Assert.AreEqual(clay, actual[1]);
             Assert.AreEqual(iron, actual[2]);
             Assert.AreEqual(crop, actual[3]);
+        }
+
+        [DataTestMethod]
+        [DataRow(VersionEnums.TravianOfficial)]
+        public void GetReviveButtonTest(VersionEnums version)
+        {
+            var index = (int)version;
+            var file = Path.Combine(_path, $"{_version[index]}_herorevive.html");
+            _doc.Load(file);
+
+            var actual = _instance[index].GetReviveButton(_doc);
+            Assert.IsNotNull(actual);
         }
     }
 }

@@ -82,6 +82,13 @@
                             <Label Content="Resource point" />
                             <xctk:IntegerUpDown x:Name="Resource" Minimum="0" Text="Resource point" />
                         </StackPanel>
+
+                        <CheckBox x:Name="AutoReviveHero" Content="Auto revive hero" />
+                        <CheckBox x:Name="AutoReviveHeroWithHeroResource" Content="Auto use hero resource to revive" />
+                        <StackPanel Orientation="Horizontal" Height="25">
+                            <Label Content="Revive village" />
+                            <ComboBox x:Name="ReviveVillage" Width="Auto" DisplayMemberPath="Name" />
+                        </StackPanel>
                     </StackPanel>
                 </Border>
             </StackPanel>

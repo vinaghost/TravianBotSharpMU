@@ -1,6 +1,6 @@
 ﻿using FluentResults;
 using MainCore.Errors;
-using MainCore.Helper.Implementations.Base;
+using MainCore.Helper.Interface;
 using MainCore.Tasks.Base;
 using Splat;
 using System;
@@ -11,11 +11,11 @@ namespace MainCore.Tasks.FunctionTasks
 {
     public class HeroReviveTask : AccountBotTask
     {
-        private readonly HeroReviveHelper _heroReviveHelper;
+        private readonly IHeroReviveHelper _heroReviveHelper;
 
         public HeroReviveTask(int accountId, CancellationToken cancellationToken = default) : base(accountId, cancellationToken)
         {
-            _heroReviveHelper = Locator.Current.GetService<HeroReviveHelper>();
+            _heroReviveHelper = Locator.Current.GetService<IHeroReviveHelper>();
         }
 
         public override Result Execute()

@@ -37,13 +37,9 @@ namespace MainCore.Helper.Implementations.Base
 
         public Result StartAdventure(int accountId)
         {
-            var result = _heroEquipHelper.Execute(accountId);
-            if (result.IsFailed) return result.WithError(new Trace(Trace.TraceMessage()));
-            result = ToAdventure(accountId);
+            var result = ChooseAdventures(accountId);
             if (result.IsFailed) return Result.Fail(result.Errors).WithError(new Trace(Trace.TraceMessage()));
-            var resultAdventures = ChooseAdventures(accountId);
-            if (result.IsFailed) return Result.Fail(result.Errors).WithError(new Trace(Trace.TraceMessage()));
-            var adventure = resultAdventures.Value;
+            var adventure = result.Value;
             result = ClickStartAdventure(accountId, adventure);
             if (result.IsFailed) return Result.Fail(result.Errors).WithError(new Trace(Trace.TraceMessage()));
             return Result.Ok();
@@ -65,6 +61,14 @@ namespace MainCore.Helper.Implementations.Base
             var adventures = _databaseHelper.GetAdventures(accountId);
             var adventure = adventures.FirstOrDefault();
             if (adventure is null) return Result.Fail(new Skip("No adventure available"));
+
+            if (setting.IsAutoEquipBeforeAdventure)
+            {
+                var result = _heroEquipHelper.Execute(accountId);
+                if (result.IsFailed) return result.WithError(new Trace(Trace.TraceMessage()));
+                result = ToAdventure(accountId);
+                if (result.IsFailed) return Result.Fail(result.Errors).WithError(new Trace(Trace.TraceMessage()));
+            }
             return Result.Ok(adventure);
         }
 

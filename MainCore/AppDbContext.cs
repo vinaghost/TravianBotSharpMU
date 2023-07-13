@@ -239,6 +239,7 @@ namespace MainCore
                 IsDontLoadImage = false,
                 IsMinimized = false,
                 IsAutoAdventure = false,
+                IsAutoEquipBeforeAdventure = false,
                 FarmIntervalMax = 610,
                 FarmIntervalMin = 590,
                 IsAutoHeroPoint = false,
@@ -575,6 +576,7 @@ namespace MainCore
                 KeyValuePair.Create(202307062300,"ContextualHelp"),
                 KeyValuePair.Create(202307071634,"HeroPoint"),
                 KeyValuePair.Create(202307102106,"HeroRevive"),
+                KeyValuePair.Create(202307131527,"HeroEquip"),
             };
             foreach (var migration in migrations)
             {

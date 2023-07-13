@@ -13,6 +13,7 @@ namespace MainCore.Migrations
         public override void Up()
         {
             Alter.Table("AccountsSettings")
-                .AddColumn("IsAutoEquipBeforeAdventure").AsBoolean().WithDefaultValue(false)        }
+                .AddColumn("IsAutoEquipBeforeAdventure").AsBoolean().WithDefaultValue(false);
+        }
     }
 }

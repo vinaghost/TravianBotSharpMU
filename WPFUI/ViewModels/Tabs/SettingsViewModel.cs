@@ -89,6 +89,14 @@ namespace WPFUI.ViewModels.Tabs
             set => this.RaiseAndSetIfChanged(ref _isAutoStartAdventure, value);
         }
 
+        private bool _isAutoEquipBeforeAdventure;
+
+        public bool IsAutoEquipBeforeAdventure
+        {
+            get => _isAutoEquipBeforeAdventure;
+            set => this.RaiseAndSetIfChanged(ref _isAutoEquipBeforeAdventure, value);
+        }
+
         private bool _isAutoSetPoint;
 
         public bool IsAutoSetPoint
@@ -182,6 +190,7 @@ namespace WPFUI.ViewModels.Tabs
                 IsDontLoadImage = settings.IsDontLoadImage;
                 IsMinimized = settings.IsMinimized;
                 IsAutoStartAdventure = settings.IsAutoAdventure;
+                IsAutoEquipBeforeAdventure = settings.IsAutoEquipBeforeAdventure;
                 IsAutoSetPoint = settings.IsAutoHeroPoint;
                 FightingPoint = settings.HeroFightingPoint;
                 OffBonusPoint = settings.HeroOffPoint;
@@ -283,6 +292,7 @@ namespace WPFUI.ViewModels.Tabs
             accountSetting.IsDontLoadImage = IsDontLoadImage;
             accountSetting.IsMinimized = IsMinimized;
             accountSetting.IsAutoAdventure = IsAutoStartAdventure;
+            accountSetting.IsAutoEquipBeforeAdventure = IsAutoEquipBeforeAdventure;
             accountSetting.IsAutoHeroPoint = IsAutoSetPoint;
             accountSetting.HeroFightingPoint = FightingPoint;
             accountSetting.HeroOffPoint = OffBonusPoint;

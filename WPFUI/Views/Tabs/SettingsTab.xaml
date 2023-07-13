@@ -65,6 +65,7 @@
                     <StackPanel>
                         <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Hero settings" VerticalAlignment="Center" FontWeight="Bold" />
                         <CheckBox x:Name="AutoStartAdventureCheckBox" Content="Auto start adventures" />
+                        <CheckBox x:Name="AutoEquipBeforeAdventureCheckBox" Content="Equip gear before starting adventures" />
                         <CheckBox x:Name="AutoSetPointCheckBox" Content="Auto set point when level up" />
                         <StackPanel Orientation="Horizontal">
                             <Label Content="Fighting point" />

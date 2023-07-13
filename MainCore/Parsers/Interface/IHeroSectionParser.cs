@@ -51,5 +51,11 @@ namespace MainCore.Parsers.Interface
 
         long[] GetRevivedResource(HtmlDocument doc);
         HtmlNode GetReviveButton(HtmlDocument doc);
+        int GetHelmet(HtmlDocument doc);
+        int GetShoes(HtmlDocument doc);
+        int GetLeftHand(HtmlDocument doc);
+        int GetHorse(HtmlDocument doc);
+        int GetBody(HtmlDocument doc);
+        int GetRightHand(HtmlDocument doc);
     }
 }

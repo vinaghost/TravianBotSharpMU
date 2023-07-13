@@ -16,6 +16,7 @@
         public bool IsMinimized { get; set; }
         public bool IsClosedIfNoTask { get; set; }
         public bool IsAutoAdventure { get; set; }
+        public bool IsAutoEquipBeforeAdventure { get; set; }
         public int FarmIntervalMin { get; set; }
         public int FarmIntervalMax { get; set; }
         public bool IsAutoHeroPoint { get; set; }

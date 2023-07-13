@@ -38,6 +38,9 @@
     <None Update="Tests\Parser\HeroSection\HtmlFiles\TravianOfficial_adventures.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="Tests\Parser\HeroSection\HtmlFiles\TravianOfficial_gear.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="Tests\Parser\HeroSection\HtmlFiles\TravianOfficial_herorevive.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

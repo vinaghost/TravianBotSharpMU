@@ -1,6 +1,6 @@
 ﻿using FluentResults;
 
-namespace MainCore.Helper.Implementations.Base
+namespace MainCore.Helper.Interface
 {
     public interface IHeroEquipHelper
     {

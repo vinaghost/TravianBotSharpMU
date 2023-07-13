@@ -254,5 +254,35 @@ namespace MainCore.Parsers.Implementations.TTWars
         {
             throw new NotImplementedException();
         }
+
+        public int GetHelmet(HtmlDocument doc)
+        {
+            throw new NotImplementedException();
+        }
+
+        public int GetShoes(HtmlDocument doc)
+        {
+            throw new NotImplementedException();
+        }
+
+        public int GetLeftHand(HtmlDocument doc)
+        {
+            throw new NotImplementedException();
+        }
+
+        public int GetHorse(HtmlDocument doc)
+        {
+            throw new NotImplementedException();
+        }
+
+        public int GetBody(HtmlDocument doc)
+        {
+            throw new NotImplementedException();
+        }
+
+        public int GetRightHand(HtmlDocument doc)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using FluentResults;
 using HtmlAgilityPack;
 using MainCore.Errors;
+using MainCore.Helper.Implementations.Base;
 using MainCore.Helper.Interface;
 using MainCore.Models.Database;
 using MainCore.Parsers.Interface;
@@ -12,7 +13,7 @@ namespace MainCore.Helper.Implementations.TravianOfficial
 {
     public class AdventureHelper : Base.AdventureHelper
     {
-        public AdventureHelper(IDatabaseHelper databaseHelper, IChromeManager chromeManager, IGeneralHelper generalHelper, IUpdateHelper updateHelper, ISystemPageParser systemPageParser, IHeroSectionParser heroSectionParser) : base(databaseHelper, chromeManager, generalHelper, updateHelper, systemPageParser, heroSectionParser)
+        public AdventureHelper(IDatabaseHelper databaseHelper, IChromeManager chromeManager, IGeneralHelper generalHelper, IUpdateHelper updateHelper, ISystemPageParser systemPageParser, IHeroSectionParser heroSectionParser, IHeroEquipHelper heroEquipHelper) : base(databaseHelper, chromeManager, generalHelper, updateHelper, systemPageParser, heroSectionParser, heroEquipHelper)
         {
         }
 

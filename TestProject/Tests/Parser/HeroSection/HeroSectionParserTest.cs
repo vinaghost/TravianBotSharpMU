@@ -271,5 +271,77 @@ namespace TestProject.Tests.Parser.HeroSection
             var actual = _instance[index].GetReviveButton(_doc);
             Assert.IsNotNull(actual);
         }
+
+        [DataTestMethod]
+        [DataRow(VersionEnums.TravianOfficial, 0)]
+        public void GetHelmetTest(VersionEnums version, int expected)
+        {
+            var index = (int)version;
+            var file = Path.Combine(_path, $"{_version[index]}_gear.html");
+            _doc.Load(file);
+
+            var actual = _instance[index].GetHelmet(_doc);
+            Assert.AreEqual(expected, actual);
+        }
+
+        [DataTestMethod]
+        [DataRow(VersionEnums.TravianOfficial, 91)]
+        public void GetBodyTest(VersionEnums version, int expected)
+        {
+            var index = (int)version;
+            var file = Path.Combine(_path, $"{_version[index]}_gear.html");
+            _doc.Load(file);
+
+            var actual = _instance[index].GetBody(_doc);
+            Assert.AreEqual(expected, actual);
+        }
+
+        [DataTestMethod]
+        [DataRow(VersionEnums.TravianOfficial, 97)]
+        public void GetShoesTest(VersionEnums version, int expected)
+        {
+            var index = (int)version;
+            var file = Path.Combine(_path, $"{_version[index]}_gear.html");
+            _doc.Load(file);
+
+            var actual = _instance[index].GetShoes(_doc);
+            Assert.AreEqual(expected, actual);
+        }
+
+        [DataTestMethod]
+        [DataRow(VersionEnums.TravianOfficial, 0)]
+        public void GetLeftHandTest(VersionEnums version, int expected)
+        {
+            var index = (int)version;
+            var file = Path.Combine(_path, $"{_version[index]}_gear.html");
+            _doc.Load(file);
+
+            var actual = _instance[index].GetLeftHand(_doc);
+            Assert.AreEqual(expected, actual);
+        }
+
+        [DataTestMethod]
+        [DataRow(VersionEnums.TravianOfficial, 31)]
+        public void GetRightHandTest(VersionEnums version, int expected)
+        {
+            var index = (int)version;
+            var file = Path.Combine(_path, $"{_version[index]}_gear.html");
+            _doc.Load(file);
+
+            var actual = _instance[index].GetRightHand(_doc);
+            Assert.AreEqual(expected, actual);
+        }
+
+        [DataTestMethod]
+        [DataRow(VersionEnums.TravianOfficial, 10)]
+        public void GetHorseTest(VersionEnums version, int expected)
+        {
+            var index = (int)version;
+            var file = Path.Combine(_path, $"{_version[index]}_gear.html");
+            _doc.Load(file);
+
+            var actual = _instance[index].GetHorse(_doc);
+            Assert.AreEqual(expected, actual);
+        }
     }
 }

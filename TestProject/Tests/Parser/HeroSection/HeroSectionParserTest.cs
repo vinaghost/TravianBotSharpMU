@@ -333,7 +333,7 @@ namespace TestProject.Tests.Parser.HeroSection
         }
 
         [DataTestMethod]
-        [DataRow(VersionEnums.TravianOfficial, 10)]
+        [DataRow(VersionEnums.TravianOfficial, 103)]
         public void GetHorseTest(VersionEnums version, int expected)
         {
             var index = (int)version;

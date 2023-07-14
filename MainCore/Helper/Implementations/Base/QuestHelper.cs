@@ -49,7 +49,7 @@ namespace MainCore.Helper.Implementations.Base
         {
             var chromeManager = _chromeManager.Get(accountId);
             var count = 3;
-            var currentTab = 1;
+            var currentTab = 0;
             Result result;
             do
             {
@@ -59,7 +59,7 @@ namespace MainCore.Helper.Implementations.Base
                 var collectButtons = _questParser.GetCollectButtons(html);
                 if (!collectButtons.Any())
                 {
-                    result = _generalHelper.SwitchTab(accountId, currentTab == 1 ? 2 : 1);
+                    result = _generalHelper.SwitchTab(accountId, currentTab == 0 ? 1 : 0);
                     if (result.IsFailed) return result.WithError(new Trace(Trace.TraceMessage()));
                     count--;
                     continue;

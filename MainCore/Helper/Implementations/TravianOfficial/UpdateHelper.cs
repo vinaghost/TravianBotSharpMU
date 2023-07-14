@@ -11,7 +11,7 @@ namespace MainCore.Helper.Implementations.TravianOfficial
 {
     public class UpdateHelper : Base.UpdateHelper
     {
-        public UpdateHelper(IVillageCurrentlyBuildingParser villageCurrentlyBuildingParser, IChromeManager chromeManager, IDbContextFactory<AppDbContext> contextFactory, IVillageFieldParser villageFieldParser, IStockBarParser stockBarParser, ISubTabParser subTabParser, IHeroSectionParser heroSectionParser, IFarmListParser farmListParser, IEventManager eventManager, IVillagesTableParser villagesTableParser, ITaskManager taskManager, IRightBarParser rightBarParser, IVillageInfrastructureParser villageInfrastructureParser) : base(villageCurrentlyBuildingParser, chromeManager, contextFactory, villageFieldParser, stockBarParser, subTabParser, heroSectionParser, farmListParser, eventManager, villagesTableParser, taskManager, rightBarParser, villageInfrastructureParser)
+        public UpdateHelper(IVillageCurrentlyBuildingParser villageCurrentlyBuildingParser, IChromeManager chromeManager, IDbContextFactory<AppDbContext> contextFactory, IVillageFieldParser villageFieldParser, IStockBarParser stockBarParser, ISubTabParser subTabParser, IHeroSectionParser heroSectionParser, IFarmListParser farmListParser, IEventManager eventManager, IVillagesTableParser villagesTableParser, ITaskManager taskManager, IRightBarParser rightBarParser, IVillageInfrastructureParser villageInfrastructureParser, IQuestParser questParser) : base(villageCurrentlyBuildingParser, chromeManager, contextFactory, villageFieldParser, stockBarParser, subTabParser, heroSectionParser, farmListParser, eventManager, villagesTableParser, taskManager, rightBarParser, villageInfrastructureParser, questParser)
         {
         }
 

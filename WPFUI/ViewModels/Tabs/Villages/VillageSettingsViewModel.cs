@@ -95,6 +95,14 @@ namespace WPFUI.ViewModels.Tabs.Villages
         public TroopTrainingSelectorViewModel StableTraining { get; } = new();
         public TroopTrainingSelectorViewModel WorkshopTraining { get; } = new();
 
+        private bool _isAutoClaimQuest;
+
+        public bool IsAutoClaimQuest
+        {
+            get => _isAutoClaimQuest;
+            set => this.RaiseAndSetIfChanged(ref _isAutoClaimQuest, value);
+        }
+
         protected override void Init(int villageId)
         {
             LoadData(villageId);
@@ -111,6 +119,8 @@ namespace WPFUI.ViewModels.Tabs.Villages
                 IgnoreRoman = settings.IsIgnoreRomanAdvantage;
                 IsAutoRefresh = settings.IsAutoRefresh;
                 IsAutoNPCOverflow = settings.IsNPCOverflow;
+
+                IsAutoClaimQuest = settings.IsAutoCollectReward;
             });
             AutoComplete.LoadData(settings.IsInstantComplete, settings.InstantCompleteTime);
             WatchAds.LoadData(settings.IsAdsUpgrade, settings.AdsUpgradeTime);
@@ -233,6 +243,7 @@ namespace WPFUI.ViewModels.Tabs.Villages
             settings.StableTroop = (int)troop;
             (troop, settings.WorkshopTroopTimeMin, settings.WorkshopTroopTimeMax, _) = WorkshopTraining.GetData();
             settings.WorkshopTroop = (int)troop;
+            settings.IsAutoCollectReward = IsAutoClaimQuest;
 
             context.Update(settings);
             context.SaveChanges();

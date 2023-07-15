@@ -19,7 +19,7 @@ namespace MainCore.Parsers.Implementations.TravianOfficial
 
         public List<HtmlNode> GetCollectButtons(HtmlDocument doc)
         {
-            return doc.DocumentNode.Descendants("button").Where(x => x.HasClass("collect")).ToList();
+            return doc.DocumentNode.Descendants("button").Where(x => x.HasClass("collect") && !x.HasClass("disabled")).ToList();
         }
     }
 }

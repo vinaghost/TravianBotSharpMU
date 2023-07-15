@@ -59,7 +59,8 @@ namespace MainCore.Helper.Implementations.Base
                 var collectButtons = _questParser.GetCollectButtons(html);
                 if (!collectButtons.Any())
                 {
-                    result = _generalHelper.SwitchTab(accountId, currentTab == 0 ? 1 : 0);
+                    currentTab = currentTab == 0 ? 1 : 0;
+                    result = _generalHelper.SwitchTab(accountId, currentTab);
                     if (result.IsFailed) return result.WithError(new Trace(Trace.TraceMessage()));
                     count--;
                     continue;

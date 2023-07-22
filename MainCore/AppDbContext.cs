@@ -300,6 +300,7 @@ namespace MainCore
                 WorkshopTroopTimeMax = 0,
                 TroopTimeMin = 50,
                 TroopTimeMax = 70,
+                IsAutoCollectReward = false,
             });
 
             //VillagesQueueBuildings
@@ -577,6 +578,7 @@ namespace MainCore
                 KeyValuePair.Create(202307071634,"HeroPoint"),
                 KeyValuePair.Create(202307102106,"HeroRevive"),
                 KeyValuePair.Create(202307131527,"HeroEquip"),
+                KeyValuePair.Create(202307141348,"AutoCollectReward"),
             };
             foreach (var migration in migrations)
             {

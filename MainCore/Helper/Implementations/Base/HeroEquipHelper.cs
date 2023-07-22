@@ -73,6 +73,14 @@ namespace MainCore.Helper.Implementations.Base
                 var result = ClickItem(accountId, shoes);
                 if (result.IsFailed) return result.WithError(new Trace(Trace.TraceMessage()));
             }
+            var horse = GetBetterHorse(heroItems.AsReadOnly(), html);
+            _logHelper.Information(accountId, $"Found new horse: {horse}");
+
+            if (horse != HeroItemEnums.None)
+            {
+                var result = ClickItem(accountId, horse);
+                if (result.IsFailed) return result.WithError(new Trace(Trace.TraceMessage()));
+            }
             return Result.Ok();
         }
 
@@ -171,6 +179,19 @@ namespace MainCore.Helper.Implementations.Base
                 HeroItemEnums.BootsSpurs1,
                 HeroItemEnums.BootsMercenery1,
                 HeroItemEnums.BootsRegeneration1,
+            };
+
+            return GetBetterGear(currentGear, items, listGear);
+        }
+
+        private HeroItemEnums GetBetterHorse(ReadOnlyCollection<HeroItemEnums> items, HtmlDocument doc)
+        {
+            var currentGear = (HeroItemEnums)_heroSectionParser.GetHorse(doc);
+            var listGear = new List<HeroItemEnums>()
+            {
+                HeroItemEnums.Horse3,
+                HeroItemEnums.Horse2,
+                HeroItemEnums.Horse1,
             };
 
             return GetBetterGear(currentGear, items, listGear);

@@ -69,5 +69,7 @@ namespace MainCore.Models.Database
         public int WorkshopTroop { get; set; }
         public int WorkshopTroopTimeMin { get; set; }
         public int WorkshopTroopTimeMax { get; set; }
+
+        public bool IsAutoCollectReward { get; set; }
     }
 }

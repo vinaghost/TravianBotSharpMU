@@ -1,5 +1,6 @@
 ﻿using FluentResults;
 using HtmlAgilityPack;
+
 using MainCore.Errors;
 using MainCore.Helper.Interface;
 using MainCore.Parsers.Interface;

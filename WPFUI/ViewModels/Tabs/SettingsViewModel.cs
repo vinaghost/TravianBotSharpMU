@@ -1,4 +1,3 @@
-﻿using DynamicData;
 using MainCore;
 using MainCore.Enums;
 using MainCore.Services.Interface;
@@ -11,7 +10,6 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Reactive;
-using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -81,12 +79,12 @@ namespace WPFUI.ViewModels.Tabs
             set => this.RaiseAndSetIfChanged(ref _isMinimized, value);
         }
 
-        private bool _isAutoStartAdventure;
+        private bool _IsAutoStartAdventure;
 
         public bool IsAutoStartAdventure
         {
-            get => _isAutoStartAdventure;
-            set => this.RaiseAndSetIfChanged(ref _isAutoStartAdventure, value);
+            get => _IsAutoStartAdventure;
+            set => this.RaiseAndSetIfChanged(ref _IsAutoStartAdventure, value);
         }
 
         private bool _isAutoEquipBeforeAdventure;
@@ -170,51 +168,34 @@ namespace WPFUI.ViewModels.Tabs
 
         private void LoadData(int index)
         {
-            using var context = _contextFactory.CreateDbContext();
-            var settings = context.AccountsSettings.Find(index);
-            var info = context.AccountsInfo.Find(index);
-
-            var reviveVillages = context.Villages.Where(x => x.AccountId == index).Select(x => new VillageComboBox() { Id = x.Id, Name = x.Name }).ToList();
-            if (!reviveVillages.Any())
+            Observable.Start(() =>
             {
-                settings.HeroReviveVillageId = -1;
-                context.Update(settings);
-                context.SaveChanges();
-                reviveVillages.Add(new VillageComboBox() { Id = -1, Name = "No village" });
-            }
-            RxApp.MainThreadScheduler.Schedule(() =>
-            {
-                SelectedTribe = Tribes.FirstOrDefault(x => x.Tribe == info.Tribe);
+                using var context = _contextFactory.CreateDbContext();
+                var settings = context.AccountsSettings.Find(index);
+                var info = context.AccountsInfo.Find(index);
+                return (settings, info);
+            }, RxApp.TaskpoolScheduler)
+                .ObserveOn(RxApp.MainThreadScheduler)
+                .Subscribe(data =>
+                {
+                    var (settings, info) = data;
+                    SelectedTribe = Tribes.FirstOrDefault(x => x.Tribe == info.Tribe);
 
-                IsSleepBetweenProxyChanging = settings.IsSleepBetweenProxyChanging;
-                IsDontLoadImage = settings.IsDontLoadImage;
-                IsMinimized = settings.IsMinimized;
-                IsAutoStartAdventure = settings.IsAutoAdventure;
-                IsAutoEquipBeforeAdventure = settings.IsAutoEquipBeforeAdventure;
-                IsAutoSetPoint = settings.IsAutoHeroPoint;
-                FightingPoint = settings.HeroFightingPoint;
-                OffBonusPoint = settings.HeroOffPoint;
-                DefBonusPoint = settings.HeroDefPoint;
-                ResourcePoint = settings.HeroResourcePoint;
+                    IsSleepBetweenProxyChanging = settings.IsSleepBetweenProxyChanging;
+                    IsDontLoadImage = settings.IsDontLoadImage;
+                    IsMinimized = settings.IsMinimized;
+                    IsAutoStartAdventure = settings.IsAutoAdventure;
 
-                IsAutoHeroRevive = settings.IsAutoHeroRevive;
-                IsUseHeroResourceRevive = settings.IsUseHeroResToRevive;
-
-                ReviveVillages.Clear();
-                ReviveVillages.AddRange(reviveVillages);
-                SelectedReviveVillage = ReviveVillages.FirstOrDefault(x => x.Id == settings.HeroReviveVillageId) ?? ReviveVillages.First();
-            });
-
-            ClickDelay.LoadData(settings.ClickDelayMin, settings.ClickDelayMax);
-            TaskDelay.LoadData(settings.TaskDelayMin, settings.TaskDelayMax);
-            WorkTime.LoadData(settings.WorkTimeMin, settings.WorkTimeMax);
-            SleepTime.LoadData(settings.SleepTimeMin, settings.SleepTimeMax);
+                    ClickDelay.LoadData(settings.ClickDelayMin, settings.ClickDelayMax);
+                    TaskDelay.LoadData(settings.TaskDelayMin, settings.TaskDelayMax);
+                    WorkTime.LoadData(settings.WorkTimeMin, settings.WorkTimeMax);
+                    SleepTime.LoadData(settings.SleepTimeMin, settings.SleepTimeMax);
+                });
         }
 
         private async Task SaveTask()
         {
-            if (!IsSettingValid()) return;
-            _waitingOverlay.ShowCommand.Execute("saving account's settings").Subscribe();
+            _waitingOverlay.Show("saving account's settings");
 
             await Task.Run(() =>
             {
@@ -222,7 +203,7 @@ namespace WPFUI.ViewModels.Tabs
                 Save(accountId);
                 TaskBasedSetting(accountId);
             });
-            _waitingOverlay.CloseCommand.Execute().Subscribe();
+            _waitingOverlay.Close();
 
             MessageBox.Show("Saved.");
         }
@@ -230,14 +211,13 @@ namespace WPFUI.ViewModels.Tabs
         private void ImportTask()
         {
             using var context = _contextFactory.CreateDbContext();
-            var account = context.Accounts.Find(AccountId);
             var ofd = new OpenFileDialog
             {
                 InitialDirectory = AppContext.BaseDirectory,
                 Filter = "TBS files (*.tbs)|*.tbs|All files (*.*)|*.*",
                 FilterIndex = 1,
                 RestoreDirectory = true,
-                FileName = $"{account.Username}_settings.tbs",
+                FileName = $"{AccountId}_settings.tbs",
             };
 
             if (ofd.ShowDialog() == true)
@@ -264,21 +244,19 @@ namespace WPFUI.ViewModels.Tabs
         private void ExportTask()
         {
             using var context = _contextFactory.CreateDbContext();
-            var account = context.Accounts.Find(AccountId);
-            if (account is null) return;
             var svd = new SaveFileDialog
             {
                 InitialDirectory = AppContext.BaseDirectory,
                 Filter = "TBS files (*.tbs)|*.tbs|All files (*.*)|*.*",
                 FilterIndex = 1,
                 RestoreDirectory = true,
-                FileName = $"{account.Username}_settings.tbs",
+                FileName = $"{AccountId}_settings.tbs",
             };
 
-            var accountSetting = context.AccountsSettings.Find(AccountId);
-            var jsonString = JsonSerializer.Serialize(accountSetting);
             if (svd.ShowDialog() == true)
             {
+                var accountSetting = context.AccountsSettings.Find(AccountId);
+                var jsonString = JsonSerializer.Serialize(accountSetting);
                 File.WriteAllText(svd.FileName, jsonString);
             }
         }

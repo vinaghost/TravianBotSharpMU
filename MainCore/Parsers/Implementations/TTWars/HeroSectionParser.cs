@@ -204,5 +204,85 @@ namespace MainCore.Parsers.Implementations.TTWars
             }
             return null;
         }
+
+        public bool IsLevelUp(HtmlDocument doc)
+        {
+            throw new NotImplementedException();
+        }
+
+        public HtmlNode GetResourceProductionInputBox(HtmlDocument doc)
+        {
+            throw new NotImplementedException();
+        }
+
+        public HtmlNode GetDefBonusInputBox(HtmlDocument doc)
+        {
+            throw new NotImplementedException();
+        }
+
+        public HtmlNode GetOffBonusInputBox(HtmlDocument doc)
+        {
+            throw new NotImplementedException();
+        }
+
+        public HtmlNode GetFightingStrengthInputBox(HtmlDocument doc)
+        {
+            throw new NotImplementedException();
+        }
+
+        public int GetAvailablePoint(HtmlDocument doc)
+        {
+            throw new NotImplementedException();
+        }
+
+        public HtmlNode GetSaveButton(HtmlDocument doc)
+        {
+            throw new NotImplementedException();
+        }
+
+        public int[] GetRevivedResource(HtmlDocument doc)
+        {
+            throw new NotImplementedException();
+        }
+
+        long[] IHeroSectionParser.GetRevivedResource(HtmlDocument doc)
+        {
+            throw new NotImplementedException();
+        }
+
+        public HtmlNode GetReviveButton(HtmlDocument doc)
+        {
+            throw new NotImplementedException();
+        }
+
+        public int GetHelmet(HtmlDocument doc)
+        {
+            throw new NotImplementedException();
+        }
+
+        public int GetShoes(HtmlDocument doc)
+        {
+            throw new NotImplementedException();
+        }
+
+        public int GetLeftHand(HtmlDocument doc)
+        {
+            throw new NotImplementedException();
+        }
+
+        public int GetHorse(HtmlDocument doc)
+        {
+            throw new NotImplementedException();
+        }
+
+        public int GetBody(HtmlDocument doc)
+        {
+            throw new NotImplementedException();
+        }
+
+        public int GetRightHand(HtmlDocument doc)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

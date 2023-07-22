@@ -58,6 +58,18 @@ namespace TestProject.Tests.Parser.HeroSection
         }
 
         [DataTestMethod]
+        [DataRow(VersionEnums.TravianOfficial, true)]
+        public void IsLevelTest(VersionEnums version, bool expected)
+        {
+            var index = (int)version;
+            var file = Path.Combine(_path, $"{_version[index]}_levelup.html");
+            _doc.Load(file);
+
+            var actual = _instance[index].IsLevelUp(_doc);
+            Assert.AreEqual(expected, actual);
+        }
+
+        [DataTestMethod]
         [DataRow(VersionEnums.TravianOfficial, 1)]
         [DataRow(VersionEnums.TTWars, 2)]
         public void GetAdventureNumTest(VersionEnums version, int expected)
@@ -230,6 +242,106 @@ namespace TestProject.Tests.Parser.HeroSection
 
             var actual = _instance[index].GetConfirmButton(_doc);
             Assert.IsNotNull(actual);
+        }
+
+        [DataTestMethod]
+        [DataRow(VersionEnums.TravianOfficial, 240, 380, 270, 160)]
+        public void GetRevivedResourceTest(VersionEnums version, int wood, int clay, int iron, int crop)
+        {
+            var index = (int)version;
+            var file = Path.Combine(_path, $"{_version[index]}_herorevive.html");
+            _doc.Load(file);
+
+            var actual = _instance[index].GetRevivedResource(_doc);
+            Assert.IsTrue(actual.Any());
+            Assert.AreEqual(wood, actual[0]);
+            Assert.AreEqual(clay, actual[1]);
+            Assert.AreEqual(iron, actual[2]);
+            Assert.AreEqual(crop, actual[3]);
+        }
+
+        [DataTestMethod]
+        [DataRow(VersionEnums.TravianOfficial)]
+        public void GetReviveButtonTest(VersionEnums version)
+        {
+            var index = (int)version;
+            var file = Path.Combine(_path, $"{_version[index]}_herorevive.html");
+            _doc.Load(file);
+
+            var actual = _instance[index].GetReviveButton(_doc);
+            Assert.IsNotNull(actual);
+        }
+
+        [DataTestMethod]
+        [DataRow(VersionEnums.TravianOfficial, 0)]
+        public void GetHelmetTest(VersionEnums version, int expected)
+        {
+            var index = (int)version;
+            var file = Path.Combine(_path, $"{_version[index]}_gear.html");
+            _doc.Load(file);
+
+            var actual = _instance[index].GetHelmet(_doc);
+            Assert.AreEqual(expected, actual);
+        }
+
+        [DataTestMethod]
+        [DataRow(VersionEnums.TravianOfficial, 91)]
+        public void GetBodyTest(VersionEnums version, int expected)
+        {
+            var index = (int)version;
+            var file = Path.Combine(_path, $"{_version[index]}_gear.html");
+            _doc.Load(file);
+
+            var actual = _instance[index].GetBody(_doc);
+            Assert.AreEqual(expected, actual);
+        }
+
+        [DataTestMethod]
+        [DataRow(VersionEnums.TravianOfficial, 97)]
+        public void GetShoesTest(VersionEnums version, int expected)
+        {
+            var index = (int)version;
+            var file = Path.Combine(_path, $"{_version[index]}_gear.html");
+            _doc.Load(file);
+
+            var actual = _instance[index].GetShoes(_doc);
+            Assert.AreEqual(expected, actual);
+        }
+
+        [DataTestMethod]
+        [DataRow(VersionEnums.TravianOfficial, 0)]
+        public void GetLeftHandTest(VersionEnums version, int expected)
+        {
+            var index = (int)version;
+            var file = Path.Combine(_path, $"{_version[index]}_gear.html");
+            _doc.Load(file);
+
+            var actual = _instance[index].GetLeftHand(_doc);
+            Assert.AreEqual(expected, actual);
+        }
+
+        [DataTestMethod]
+        [DataRow(VersionEnums.TravianOfficial, 31)]
+        public void GetRightHandTest(VersionEnums version, int expected)
+        {
+            var index = (int)version;
+            var file = Path.Combine(_path, $"{_version[index]}_gear.html");
+            _doc.Load(file);
+
+            var actual = _instance[index].GetRightHand(_doc);
+            Assert.AreEqual(expected, actual);
+        }
+
+        [DataTestMethod]
+        [DataRow(VersionEnums.TravianOfficial, 103)]
+        public void GetHorseTest(VersionEnums version, int expected)
+        {
+            var index = (int)version;
+            var file = Path.Combine(_path, $"{_version[index]}_gear.html");
+            _doc.Load(file);
+
+            var actual = _instance[index].GetHorse(_doc);
+            Assert.AreEqual(expected, actual);
         }
     }
 }

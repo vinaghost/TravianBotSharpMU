@@ -30,8 +30,9 @@ namespace MainCore.Helper.Implementations.Base
         protected readonly IRightBarParser _rightBarParser;
         protected readonly ITaskManager _taskManager;
         protected readonly IVillageInfrastructureParser _villageInfrastructureParser;
+        protected readonly IQuestParser _questParser;
 
-        public UpdateHelper(IVillageCurrentlyBuildingParser villageCurrentlyBuildingParser, IChromeManager chromeManager, IDbContextFactory<AppDbContext> contextFactory, IVillageFieldParser villageFieldParser, IStockBarParser stockBarParser, ISubTabParser subTabParser, IHeroSectionParser heroSectionParser, IFarmListParser farmListParser, IEventManager eventManager, IVillagesTableParser villagesTableParser, ITaskManager taskManager, IRightBarParser rightBarParser, IVillageInfrastructureParser villageInfrastructureParser)
+        public UpdateHelper(IVillageCurrentlyBuildingParser villageCurrentlyBuildingParser, IChromeManager chromeManager, IDbContextFactory<AppDbContext> contextFactory, IVillageFieldParser villageFieldParser, IStockBarParser stockBarParser, ISubTabParser subTabParser, IHeroSectionParser heroSectionParser, IFarmListParser farmListParser, IEventManager eventManager, IVillagesTableParser villagesTableParser, ITaskManager taskManager, IRightBarParser rightBarParser, IVillageInfrastructureParser villageInfrastructureParser, IQuestParser questParser)
         {
             _villageCurrentlyBuildingParser = villageCurrentlyBuildingParser;
             _chromeManager = chromeManager;
@@ -46,6 +47,7 @@ namespace MainCore.Helper.Implementations.Base
             _taskManager = taskManager;
             _rightBarParser = rightBarParser;
             _villageInfrastructureParser = villageInfrastructureParser;
+            _questParser = questParser;
         }
 
         public abstract void UpdateBuildings(int accountId, int villageId);
@@ -55,6 +57,8 @@ namespace MainCore.Helper.Implementations.Base
             UpdateAccountInfo(accountId);
 
             UpdateHeroInfo(accountId);
+            TriggerHeroPoint(accountId);
+            TriggerHeroRevive(accountId);
 
             UpdateVillageList(accountId);
 
@@ -62,6 +66,7 @@ namespace MainCore.Helper.Implementations.Base
             {
                 UpdateResource(accountId, villageId);
                 TriggerAutoNPC(accountId, villageId);
+                TriggerAutoClaimReward(accountId, villageId);
             }
         }
 
@@ -683,6 +688,58 @@ namespace MainCore.Helper.Implementations.Base
                 }
                 _taskManager.Add<NPCTask>(accountId, villageId);
             }
+        }
+
+        private void TriggerHeroPoint(int accountId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            var setting = context.AccountsSettings.Find(accountId);
+            if (!setting.IsAutoHeroPoint) return;
+            var chromeBrowser = _chromeManager.Get(accountId);
+            var html = chromeBrowser.GetHtml();
+            var isLevelUp = _heroSectionParser.IsLevelUp(html);
+            if (!isLevelUp) return;
+
+            var listTask = _taskManager.GetList(accountId);
+            var tasks = listTask.OfType<HeroPointTask>();
+            if (tasks.Any()) return;
+
+            _taskManager.Add<HeroPointTask>(accountId);
+        }
+
+        private void TriggerHeroRevive(int accountId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            var setting = context.AccountsSettings.Find(accountId);
+            if (!setting.IsAutoHeroRevive) return;
+
+            var hero = context.Heroes.Find(accountId);
+            if (hero.Status != HeroStatusEnums.Dead) return;
+
+            var listTask = _taskManager.GetList(accountId);
+            var tasks = listTask.OfType<HeroReviveTask>();
+            if (tasks.Any()) return;
+
+            _taskManager.Add<HeroReviveTask>(accountId);
+        }
+
+        private void TriggerAutoClaimReward(int accountId, int villageId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            var setting = context.VillagesSettings.Find(villageId);
+            if (!setting.IsAutoCollectReward) return;
+
+            var chromeBrowser = _chromeManager.Get(accountId);
+            var html = chromeBrowser.GetHtml();
+
+            var questMaster = _questParser.GetQuestMasterButton(html);
+            if (!_questParser.IsQuestMasterClaimable(questMaster)) return;
+
+            var listTask = _taskManager.GetList(accountId);
+            var tasks = listTask.OfType<CollectRewardTask>();
+            if (tasks.Any(x => x.VillageId == villageId)) return;
+
+            _taskManager.Add<CollectRewardTask>(accountId, villageId);
         }
     }
 }

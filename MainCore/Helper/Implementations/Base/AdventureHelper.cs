@@ -15,11 +15,12 @@ namespace MainCore.Helper.Implementations.Base
         protected readonly IChromeManager _chromeManager;
         protected readonly IGeneralHelper _generalHelper;
         protected readonly IUpdateHelper _updateHelper;
+        protected readonly IHeroEquipHelper _heroEquipHelper;
 
         protected readonly ISystemPageParser _systemPageParser;
         protected readonly IHeroSectionParser _heroSectionParser;
 
-        protected AdventureHelper(IDatabaseHelper databaseHelper, IChromeManager chromeManager, IGeneralHelper generalHelper, IUpdateHelper updateHelper, ISystemPageParser systemPageParser, IHeroSectionParser heroSectionParser)
+        protected AdventureHelper(IDatabaseHelper databaseHelper, IChromeManager chromeManager, IGeneralHelper generalHelper, IUpdateHelper updateHelper, ISystemPageParser systemPageParser, IHeroSectionParser heroSectionParser, IHeroEquipHelper heroEquipHelper)
         {
             _databaseHelper = databaseHelper;
             _chromeManager = chromeManager;
@@ -27,6 +28,7 @@ namespace MainCore.Helper.Implementations.Base
             _updateHelper = updateHelper;
             _systemPageParser = systemPageParser;
             _heroSectionParser = heroSectionParser;
+            _heroEquipHelper = heroEquipHelper;
         }
 
         public abstract Result ToAdventure(int accountId);
@@ -59,6 +61,14 @@ namespace MainCore.Helper.Implementations.Base
             var adventures = _databaseHelper.GetAdventures(accountId);
             var adventure = adventures.FirstOrDefault();
             if (adventure is null) return Result.Fail(new Skip("No adventure available"));
+
+            if (setting.IsAutoEquipBeforeAdventure)
+            {
+                var result = _heroEquipHelper.Execute(accountId);
+                if (result.IsFailed) return result.WithError(new Trace(Trace.TraceMessage()));
+                result = ToAdventure(accountId);
+                if (result.IsFailed) return Result.Fail(result.Errors).WithError(new Trace(Trace.TraceMessage()));
+            }
             return Result.Ok(adventure);
         }
 

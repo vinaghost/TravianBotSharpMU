@@ -95,6 +95,14 @@ namespace WPFUI.ViewModels.Tabs.Villages
         public TroopTrainingSelectorViewModel StableTraining { get; } = new();
         public TroopTrainingSelectorViewModel WorkshopTraining { get; } = new();
 
+        private bool _isAutoClaimQuest;
+
+        public bool IsAutoClaimQuest
+        {
+            get => _isAutoClaimQuest;
+            set => this.RaiseAndSetIfChanged(ref _isAutoClaimQuest, value);
+        }
+
         protected override void Init(int villageId)
         {
             LoadData(villageId);
@@ -138,6 +146,7 @@ namespace WPFUI.ViewModels.Tabs.Villages
                     BarrackTraining.LoadData(tribe.GetInfantryTroops().Select(x => new TroopInfo(x)), (TroopEnums)settings.BarrackTroop, settings.BarrackTroopTimeMin, settings.BarrackTroopTimeMax, settings.IsGreatBarrack);
                     StableTraining.LoadData(tribe.GetCavalryTroops().Select(x => new TroopInfo(x)), (TroopEnums)settings.StableTroop, settings.StableTroopTimeMin, settings.StableTroopTimeMax, settings.IsGreatStable);
                     WorkshopTraining.LoadData(tribe.GetSiegeTroops().Select(x => new TroopInfo(x)), (TroopEnums)settings.WorkshopTroop, settings.WorkshopTroopTimeMin, settings.WorkshopTroopTimeMax, false);
+                    IsAutoClaimQuest = settings.IsAutoCollectReward;
                 });
         }
 
@@ -240,6 +249,7 @@ namespace WPFUI.ViewModels.Tabs.Villages
             settings.StableTroop = (int)troop;
             (troop, settings.WorkshopTroopTimeMin, settings.WorkshopTroopTimeMax, _) = WorkshopTraining.GetData();
             settings.WorkshopTroop = (int)troop;
+            settings.IsAutoCollectReward = IsAutoClaimQuest;
 
             context.Update(settings);
             context.SaveChanges();

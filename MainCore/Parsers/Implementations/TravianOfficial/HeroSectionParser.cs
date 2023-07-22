@@ -48,6 +48,56 @@ namespace MainCore.Parsers.Implementations.TravianOfficial
             };
         }
 
+        public bool IsLevelUp(HtmlDocument doc)
+        {
+            var topBarHero = doc.GetElementbyId("topBarHero");
+            if (topBarHero is null) return false;
+            var levelUp = topBarHero.Descendants("i").FirstOrDefault(x => x.HasClass("levelUp"));
+            if (levelUp is null) return false;
+            return levelUp.HasClass("show");
+        }
+
+        public int GetAvailablePoint(HtmlDocument doc)
+        {
+            var heroAttributes = doc.DocumentNode.Descendants("div").FirstOrDefault(x => x.HasClass("heroAttributes"));
+            if (heroAttributes is null) return 0;
+            var availablePoint = heroAttributes.Descendants("div").FirstOrDefault(x => x.HasClass("pointsAvailable"));
+            if (availablePoint is null) return 0;
+            var valueStr = new string(availablePoint.InnerText.Where(c => char.IsDigit(c)).ToArray());
+            if (string.IsNullOrEmpty(valueStr)) return 0;
+            return int.Parse(valueStr);
+        }
+
+        public HtmlNode GetFightingStrengthInputBox(HtmlDocument doc)
+        {
+            var inputBox = doc.DocumentNode.Descendants("input").FirstOrDefault(x => x.GetAttributeValue("name", "") == "fightingStrength");
+            return inputBox;
+        }
+
+        public HtmlNode GetOffBonusInputBox(HtmlDocument doc)
+        {
+            var inputBox = doc.DocumentNode.Descendants("input").FirstOrDefault(x => x.GetAttributeValue("name", "") == "offBonus");
+            return inputBox;
+        }
+
+        public HtmlNode GetDefBonusInputBox(HtmlDocument doc)
+        {
+            var inputBox = doc.DocumentNode.Descendants("input").FirstOrDefault(x => x.GetAttributeValue("name", "") == "defBonus");
+            return inputBox;
+        }
+
+        public HtmlNode GetResourceProductionInputBox(HtmlDocument doc)
+        {
+            var inputBox = doc.DocumentNode.Descendants("input").FirstOrDefault(x => x.GetAttributeValue("name", "") == "resourceProduction");
+            return inputBox;
+        }
+
+        public HtmlNode GetSaveButton(HtmlDocument doc)
+        {
+            var button = doc.GetElementbyId("savePoints");
+            return button;
+        }
+
         public int GetAdventureNum(HtmlDocument doc)
         {
             var adv45 = doc.DocumentNode.Descendants("a").FirstOrDefault(x => x.HasClass("adventure"));
@@ -214,6 +264,93 @@ namespace MainCore.Parsers.Implementations.TravianOfficial
                 }
             }
             return null;
+        }
+
+        public long[] GetRevivedResource(HtmlDocument doc)
+        {
+            var reviveWrapper = doc.DocumentNode.Descendants("div").FirstOrDefault(x => x.HasClass("reviveWrapper"));
+            if (reviveWrapper is null) return Array.Empty<long>();
+            var reviveWithResources = reviveWrapper.Descendants("div").FirstOrDefault(x => x.HasClass("reviveWithResources") && x.HasClass("charges"));
+            if (reviveWithResources is null) return Array.Empty<long>();
+
+            var resourceDivs = reviveWithResources.Descendants("div").Where(x => x.HasClass("resource")).Take(4);
+            if (!resourceDivs.Any()) return Array.Empty<long>();
+
+            var resources = new long[4];
+            for (var i = 0; i < 4; i++)
+            {
+                var resourceDiv = resourceDivs.ElementAt(i);
+                var resourceValue = resourceDiv.Descendants("span").FirstOrDefault();
+                if (resourceValue is null)
+                {
+                    resources[i] = 0;
+                    continue;
+                }
+                var resourceValueStr = new string(resourceValue.InnerText.Where(c => char.IsDigit(c)).ToArray());
+                if (string.IsNullOrEmpty(resourceValueStr)) continue;
+                resources[i] = long.Parse(resourceValueStr);
+            }
+            return resources;
+        }
+
+        public HtmlNode GetReviveButton(HtmlDocument doc)
+        {
+            var reviveWrapper = doc.DocumentNode.Descendants("div").FirstOrDefault(x => x.HasClass("reviveWrapper"));
+            if (reviveWrapper is null) return null;
+            var reviveWithResourcesButton = reviveWrapper.Descendants("button").FirstOrDefault(x => x.HasClass("reviveWithResources") && x.HasClass("green"));
+            return reviveWithResourcesButton;
+        }
+
+        private int GetGear(HtmlDocument doc, string gearSlotName)
+        {
+            var equipmentSlots = doc.DocumentNode.Descendants("div").FirstOrDefault(x => x.HasClass("equipmentSlots"));
+            if (equipmentSlots is null) return 0;
+
+            var gearSlot = equipmentSlots.Descendants("div").FirstOrDefault(x => x.HasClass(gearSlotName));
+            if (gearSlot is null) return 0;
+            if (gearSlot.HasClass("empty")) return 0;
+
+            var gearNode = gearSlot.Descendants("div").FirstOrDefault(x => x.HasClass("item"));
+            if (gearNode is null) return 0;
+            var classes = gearNode.GetClasses();
+            if (classes.Count() != 2) return 0;
+
+            var itemValue = classes.ElementAt(1);
+            if (itemValue is null) return 0;
+
+            var itemValueStr = new string(itemValue.Where(c => char.IsDigit(c)).ToArray());
+            if (string.IsNullOrEmpty(itemValueStr)) return 0;
+            return int.Parse(itemValueStr);
+        }
+
+        public int GetHelmet(HtmlDocument doc)
+        {
+            return GetGear(doc, "helmet");
+        }
+
+        public int GetBody(HtmlDocument doc)
+        {
+            return GetGear(doc, "body");
+        }
+
+        public int GetShoes(HtmlDocument doc)
+        {
+            return GetGear(doc, "shoes");
+        }
+
+        public int GetLeftHand(HtmlDocument doc)
+        {
+            return GetGear(doc, "leftHand");
+        }
+
+        public int GetRightHand(HtmlDocument doc)
+        {
+            return GetGear(doc, "rightHand");
+        }
+
+        public int GetHorse(HtmlDocument doc)
+        {
+            return GetGear(doc, "horse");
         }
     }
 }

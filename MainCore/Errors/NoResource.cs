@@ -15,5 +15,7 @@ namespace MainCore.Errors
         public static NoResource Build(BuildingEnums building, int level) => new($"Not enough resources to build {building} level {level}");
 
         public static NoResource Hero(Resources cost) => new($"Not enough resources in hero inventory for {cost}");
+
+        public static NoResource ReviveHero(Resources cost) => new($"Not enough resources to revive hero.Costs {cost}");
     }
 }

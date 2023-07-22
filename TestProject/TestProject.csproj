@@ -40,10 +40,19 @@
     <None Update="Tests\Parser\HeroSection\HtmlFiles\TravianOfficial_adventures.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="Tests\Parser\HeroSection\HtmlFiles\TravianOfficial_gear.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Tests\Parser\HeroSection\HtmlFiles\TravianOfficial_herorevive.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="Tests\Parser\HeroSection\HtmlFiles\TravianOfficial_inputdialog.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Tests\Parser\HeroSection\HtmlFiles\TravianOfficial_inventory.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Tests\Parser\HeroSection\HtmlFiles\TravianOfficial_levelup.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Tests\Parser\HeroSection\HtmlFiles\TTWars_adventures.html">
@@ -59,6 +68,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Tests\Parser\NavigationBar\HtmlFiles\TTWars.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Tests\Parser\Option\HtmlFiles\TravianOfficial.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Tests\Parser\RightBar\HtmlFiles\TravianOfficial.html">

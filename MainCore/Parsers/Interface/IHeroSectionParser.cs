@@ -34,5 +34,28 @@ namespace MainCore.Parsers.Interface
         public HtmlNode GetConfirmButton(HtmlDocument doc);
 
         public HtmlNode GetStartAdventureButton(HtmlDocument doc, int x, int y);
+
+        bool IsLevelUp(HtmlDocument doc);
+
+        HtmlNode GetResourceProductionInputBox(HtmlDocument doc);
+
+        HtmlNode GetDefBonusInputBox(HtmlDocument doc);
+
+        HtmlNode GetOffBonusInputBox(HtmlDocument doc);
+
+        HtmlNode GetFightingStrengthInputBox(HtmlDocument doc);
+
+        int GetAvailablePoint(HtmlDocument doc);
+
+        HtmlNode GetSaveButton(HtmlDocument doc);
+
+        long[] GetRevivedResource(HtmlDocument doc);
+        HtmlNode GetReviveButton(HtmlDocument doc);
+        int GetHelmet(HtmlDocument doc);
+        int GetShoes(HtmlDocument doc);
+        int GetLeftHand(HtmlDocument doc);
+        int GetHorse(HtmlDocument doc);
+        int GetBody(HtmlDocument doc);
+        int GetRightHand(HtmlDocument doc);
     }
 }

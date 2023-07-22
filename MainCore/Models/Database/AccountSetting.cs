@@ -16,7 +16,17 @@
         public bool IsMinimized { get; set; }
         public bool IsClosedIfNoTask { get; set; }
         public bool IsAutoAdventure { get; set; }
+        public bool IsAutoEquipBeforeAdventure { get; set; }
         public int FarmIntervalMin { get; set; }
         public int FarmIntervalMax { get; set; }
+        public bool IsAutoHeroPoint { get; set; }
+        public int HeroFightingPoint { get; set; }
+        public int HeroOffPoint { get; set; }
+        public int HeroDefPoint { get; set; }
+        public int HeroResourcePoint { get; set; }
+
+        public bool IsAutoHeroRevive { get; set; }
+        public int HeroReviveVillageId { get; set; }
+        public bool IsUseHeroResToRevive { get; set; }
     }
 }

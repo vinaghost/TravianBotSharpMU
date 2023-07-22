@@ -239,8 +239,17 @@ namespace MainCore
                 IsDontLoadImage = false,
                 IsMinimized = false,
                 IsAutoAdventure = false,
+                IsAutoEquipBeforeAdventure = false,
                 FarmIntervalMax = 610,
                 FarmIntervalMin = 590,
+                IsAutoHeroPoint = false,
+                HeroFightingPoint = 1,
+                HeroOffPoint = 0,
+                HeroDefPoint = 0,
+                HeroResourcePoint = 3,
+                IsAutoHeroRevive = false,
+                HeroReviveVillageId = -1,
+                IsUseHeroResToRevive = false,
             });
             Heroes.Add(new Hero { AccountId = accountId });
 
@@ -291,6 +300,7 @@ namespace MainCore
                 WorkshopTroopTimeMax = 0,
                 TroopTimeMin = 50,
                 TroopTimeMax = 70,
+                IsAutoCollectReward = false,
             });
 
             //VillagesQueueBuildings
@@ -564,6 +574,11 @@ namespace MainCore
                 KeyValuePair.Create(202304281723,"AutoTrainTroopFixed"),
                 KeyValuePair.Create(202305052234,"AutoTrainTroopTimeDelay"),
                 KeyValuePair.Create(202306061739,"AutoTrainTroopMaxTrain"),
+                KeyValuePair.Create(202307062300,"ContextualHelp"),
+                KeyValuePair.Create(202307071634,"HeroPoint"),
+                KeyValuePair.Create(202307102106,"HeroRevive"),
+                KeyValuePair.Create(202307131527,"HeroEquip"),
+                KeyValuePair.Create(202307141348,"AutoCollectReward"),
             };
             foreach (var migration in migrations)
             {

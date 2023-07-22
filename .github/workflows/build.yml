@@ -48,7 +48,7 @@ jobs:
       
       - name: Publish
         run: dotnet publish WPFUI -c Release --no-restore -p:PublishSingleFile=true -p:Server=${{ matrix.server }} --self-contained
-
+        
       - name: Upload a Build Artifact
         uses: actions/upload-artifact@v3
         with:
@@ -62,5 +62,5 @@ jobs:
       - name: Comment PR
         uses: thollander/actions-comment-pull-request@v1.4.1
         with:
-          message: Click [here](https://nightly.link/Erol444/TravianBotSharp/actions/runs/${{ github.run_id }}) to check the build          
+          message: Click [here](https://nightly.link/vinaghost/TravianBotSharpMU/actions/runs/${{ github.run_id }}?h=179135b8349fe79b378e7f5de31b7ef9b52365b1) to check the build          
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

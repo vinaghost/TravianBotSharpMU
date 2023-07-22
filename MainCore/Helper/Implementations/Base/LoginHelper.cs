@@ -18,14 +18,16 @@ namespace MainCore.Helper.Implementations.Base
         private readonly IDbContextFactory<AppDbContext> _contextFactory;
 
         private readonly ISystemPageParser _systemPageParser;
+        private readonly IOptionParser _optionParser;
 
-        public LoginHelper(IChromeManager chromeManager, IGeneralHelper generalHelper, IDbContextFactory<AppDbContext> contextFactory, ISystemPageParser systemPageParser, IUpdateHelper updateHelper)
+        public LoginHelper(IChromeManager chromeManager, IGeneralHelper generalHelper, IDbContextFactory<AppDbContext> contextFactory, ISystemPageParser systemPageParser, IUpdateHelper updateHelper, IOptionParser optionParser)
         {
             _chromeManager = chromeManager;
             _generalHelper = generalHelper;
             _contextFactory = contextFactory;
             _systemPageParser = systemPageParser;
             _updateHelper = updateHelper;
+            _optionParser = optionParser;
         }
 
         public Result Execute(int accountId)
@@ -37,6 +39,10 @@ namespace MainCore.Helper.Implementations.Base
             if (result.IsFailed) return result.WithError(new Trace(Trace.TraceMessage()));
 
             _updateHelper.Update(accountId);
+
+            result = DisableContextualHelp(accountId);
+            if (result.IsFailed) return result.WithError(new Trace(Trace.TraceMessage()));
+
             return Result.Ok();
         }
 
@@ -90,6 +96,53 @@ namespace MainCore.Helper.Implementations.Base
 
             result = _generalHelper.Click(accountId, By.XPath(buttonNode.XPath));
             if (result.IsFailed) return result.WithError(new Trace(Trace.TraceMessage()));
+            return Result.Ok();
+        }
+
+        private Result DisableContextualHelp(int accountId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            var accountInfo = context.AccountsInfo.Find(accountId);
+            if (accountInfo.IsContextualHelpDisabled) return Result.Ok();
+
+            var chromeBrowser = _chromeManager.Get(accountId);
+            var html = chromeBrowser.GetHtml();
+            var optionButton = _optionParser.GetOptionsButton(html);
+            if (optionButton is null)
+            {
+                return Result.Fail(new Retry("Cannot find option button"));
+            }
+
+            var result = _generalHelper.Click(accountId, By.XPath(optionButton.XPath));
+            if (result.IsFailed) return result.WithError(new Trace(Trace.TraceMessage()));
+
+            html = chromeBrowser.GetHtml();
+
+            var disableContextualHelpButton = _optionParser.GetContextualHelpCheckBox(html);
+            if (disableContextualHelpButton is null)
+            {
+                return Result.Fail(new Retry("Cannot find disable contextual help button"));
+            }
+
+            var chrome = chromeBrowser.GetChrome();
+            var buttonElement = chrome.FindElement(By.XPath(disableContextualHelpButton.XPath));
+            if (!buttonElement.Selected)
+            {
+                buttonElement.Click();
+            }
+
+            var saveButton = _optionParser.GetSaveButton(html);
+            if (saveButton is null)
+            {
+                return Result.Fail(new Retry("Cannot find save button"));
+            }
+            result = _generalHelper.Click(accountId, By.XPath(saveButton.XPath));
+            if (result.IsFailed) return result.WithError(new Trace(Trace.TraceMessage()));
+
+            accountInfo.IsContextualHelpDisabled = true;
+            context.Update(accountInfo);
+            context.SaveChanges();
+
             return Result.Ok();
         }
     }

@@ -55,7 +55,9 @@ namespace MainCore.Helper.Implementations.Base
                 var html = new HtmlDocument();
                 html.LoadHtml(driver.PageSource);
                 var confirmButton = _villageCurrentlyBuildingParser.GetConfirmFinishNowButton(html);
-                return confirmButton is not null;
+                if (confirmButton is null) return false;
+                var element = driver.FindElement(By.XPath(confirmButton.XPath));
+                return element.Enabled && element.Displayed;
             });
             if (result.IsFailed) return result.WithError(new Trace(Trace.TraceMessage()));
 

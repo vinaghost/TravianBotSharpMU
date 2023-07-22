@@ -1,4 +1,6 @@
 ﻿using FluentResults;
+using HtmlAgilityPack;
+
 using MainCore.Errors;
 using MainCore.Helper.Interface;
 using MainCore.Parsers.Interface;
@@ -49,6 +51,32 @@ namespace MainCore.Helper.Implementations.Base
         public abstract Result ToBuilding(int accountId, int villageId, int index);
 
         public abstract Result ToHeroInventory(int accountId);
+
+        public Result ToHeroAttributes(int accountId)
+        {
+            var result = ToHeroInventory(accountId);
+            if (result.IsFailed) return result.WithError(new Trace(Trace.TraceMessage()));
+
+            var chromeBrowser = _chromeManager.Get(accountId);
+            var html = chromeBrowser.GetHtml();
+
+            var tab = _heroSectionParser.GetHeroTab(html, 2);
+            if (tab is null) return Result.Fail(Retry.ElementNotFound);
+            result = Click(accountId, By.XPath(tab.XPath));
+            if (result.IsFailed) return result.WithError(new Trace(Trace.TraceMessage()));
+
+            result = Wait(accountId, driver =>
+            {
+                var doc = new HtmlDocument();
+                doc.LoadHtml(driver.PageSource);
+                var tab = _heroSectionParser.GetHeroTab(doc, 2);
+                if (tab is null) return false;
+                return _heroSectionParser.IsCurrentTab(tab);
+            });
+            if (result.IsFailed) return result.WithError(new Trace(Trace.TraceMessage()));
+
+            return Result.Ok();
+        }
 
         public int GetDelayClick(int accountId)
         {

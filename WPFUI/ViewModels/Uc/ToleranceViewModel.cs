@@ -1,6 +1,7 @@
 ﻿using ReactiveUI;
 using System;
 using System.Reactive.Linq;
+
 using WPFUI.ViewModels.Abstract;
 
 namespace WPFUI.ViewModels.Uc

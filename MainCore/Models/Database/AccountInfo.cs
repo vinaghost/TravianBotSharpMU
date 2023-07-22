@@ -9,5 +9,6 @@ namespace MainCore.Models.Database
         public int Gold { get; set; }
         public int Silver { get; set; }
         public bool HasPlusAccount { get; set; }
+        public bool IsContextualHelpDisabled { get; set; }
     }
 }

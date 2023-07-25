@@ -1,11 +1,12 @@
 ﻿using ReactiveUI;
 using System;
-using System.Reactive.Concurrency;
 using System.Reactive.Linq;
+
+using WPFUI.ViewModels.Abstract;
 
 namespace WPFUI.ViewModels.Uc
 {
-    public class ToleranceViewModel : ReactiveObject
+    public class ToleranceViewModel : ViewModelBase
     {
         public ToleranceViewModel() : base()
         {
@@ -18,11 +19,11 @@ namespace WPFUI.ViewModels.Uc
 
         public void LoadData(int min, int max)
         {
-            RxApp.MainThreadScheduler.Schedule(() =>
+            Observable.Start(() =>
             {
                 MainValue = (max + min) / 2;
                 ToleranceValue = (max - min) / 2;
-            });
+            }, RxApp.MainThreadScheduler);
         }
 
         public (int, int) GetData()

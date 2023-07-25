@@ -5,7 +5,7 @@ using WPFUI.Store;
 
 namespace WPFUI.ViewModels.Abstract
 {
-    public abstract class AccountTabBaseViewModel : ActivatableViewModelBase
+    public abstract class AccountTabBaseViewModel : TabBaseViewModel
     {
         protected readonly SelectedItemStore _selectedItemStore;
 

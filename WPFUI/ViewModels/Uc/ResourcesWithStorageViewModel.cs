@@ -1,13 +1,14 @@
 ﻿using ReactiveUI;
-using System.Reactive.Concurrency;
+using System.Reactive.Linq;
+using WPFUI.ViewModels.Abstract;
 
 namespace WPFUI.ViewModels.Uc
 {
-    public class ResourcesWithStorageViewModel : ReactiveObject
+    public class ResourcesWithStorageViewModel : ViewModelBase
     {
         public void LoadData(long warehouse, long granary, long wood, long clay, long iron, long crop)
         {
-            RxApp.MainThreadScheduler.Schedule(() =>
+            Observable.Start(() =>
             {
                 Warehouse = warehouse;
                 Granary = granary;
@@ -15,7 +16,7 @@ namespace WPFUI.ViewModels.Uc
                 Clay = clay;
                 Iron = iron;
                 Crop = crop;
-            });
+            }, RxApp.MainThreadScheduler);
         }
 
         public (long, long, long, long, long, long) GetData()

@@ -1,7 +1,6 @@
 ﻿using ReactiveUI;
 using WPFUI.Models;
 using WPFUI.ViewModels.Abstract;
-using WPFUI.ViewModels.Tabs.Villages;
 
 namespace WPFUI.Store
 {
@@ -10,14 +9,8 @@ namespace WPFUI.Store
         private readonly bool[] _tabVisibility = new bool[4];
         private TabType _currentTabType;
 
-        private readonly NoVillageViewModel _noVillageViewModel;
-        private readonly BuildViewModel _normalVillageViewModel;
-
-        public VillageTabStore(NoVillageViewModel noVillageViewModel, BuildViewModel normalVillageViewModel)
+        public VillageTabStore()
         {
-            _noVillageViewModel = noVillageViewModel;
-            _normalVillageViewModel = normalVillageViewModel;
-
             SetTabType(TabType.NoAccount);
         }
 
@@ -38,11 +31,11 @@ namespace WPFUI.Store
             switch (tabType)
             {
                 case TabType.NoAccount:
-                    _noVillageViewModel.IsActive = true;
+                    IsNoVillageTabSelected = true;
                     break;
 
                 case TabType.Normal:
-                    _normalVillageViewModel.IsActive = true;
+                    IsNormalTabSelected = true;
                     break;
 
                 default:
@@ -64,6 +57,22 @@ namespace WPFUI.Store
         {
             get => _isNormalTabVisible;
             set => this.RaiseAndSetIfChanged(ref _isNormalTabVisible, value);
+        }
+
+        private bool _isNoVillageTabSelected;
+
+        public bool IsNoVillageTabSelected
+        {
+            get => _isNoVillageTabSelected;
+            set => this.RaiseAndSetIfChanged(ref _isNoVillageTabSelected, value);
+        }
+
+        private bool _isNormalTabSelected;
+
+        public bool IsNormalTabSelected
+        {
+            get => _isNormalTabSelected;
+            set => this.RaiseAndSetIfChanged(ref _isNormalTabSelected, value);
         }
     }
 }

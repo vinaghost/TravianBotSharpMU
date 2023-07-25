@@ -7,6 +7,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive;
+using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -41,40 +42,35 @@ namespace WPFUI.ViewModels.Tabs
 
         private void LoadData(int accountId)
         {
-            Observable.Start(() =>
-            {
-                using var context = _contextFactory.CreateDbContext();
-                var account = context.Accounts.Find(accountId);
+            using var context = _contextFactory.CreateDbContext();
+            var account = context.Accounts.Find(accountId);
 
-                var accesses = context.Accesses
-                    .Where(x => x.AccountId == accountId)
-                    .Select(item => new Models.Access()
-                    {
-                        Password = item.Password,
-                        ProxyHost = item.ProxyHost,
-                        ProxyPort = item.ProxyPort.ToString(),
-                        ProxyUsername = item.ProxyUsername,
-                        ProxyPassword = item.ProxyPassword,
-                    })
-                    .ToList();
-                return (account, accesses);
-            }, RxApp.TaskpoolScheduler)
-                .ObserveOn(RxApp.MainThreadScheduler)
-                .Subscribe((data) =>
+            var accesses = context.Accesses
+                .Where(x => x.AccountId == accountId)
+                .Select(item => new Models.Access()
                 {
-                    var (account, accesses) = data;
-                    Username = account.Username;
-                    Server = account.Server;
+                    Password = item.Password,
+                    ProxyHost = item.ProxyHost,
+                    ProxyPort = item.ProxyPort.ToString(),
+                    ProxyUsername = item.ProxyUsername,
+                    ProxyPassword = item.ProxyPassword,
+                })
+                .ToList();
 
-                    Accessess.Clear();
-                    Accessess.AddRange(accesses);
-                });
+            RxApp.MainThreadScheduler.Schedule(() =>
+            {
+                Username = account.Username;
+                Server = account.Server;
+
+                Accessess.Clear();
+                Accessess.AddRange(accesses);
+            });
         }
 
         private async Task SaveTask()
         {
             if (!CheckInput()) return;
-            _waitingOverlay.Show("saving account");
+            _waitingOverlay.ShowCommand.Execute("saving account").Subscribe();
 
             var context = await _contextFactory.CreateDbContextAsync();
             var accountId = _selectedItemStore.Account.Id;
@@ -105,18 +101,18 @@ namespace WPFUI.ViewModels.Tabs
 
             _eventManager.OnAccountsUpdate();
             Clean();
-            _waitingOverlay.Close();
+            _waitingOverlay.CloseCommand.Execute().Subscribe();
             MessageBox.Show("Account saved successfully");
         }
 
         private void Clean()
         {
-            Observable.Start(() =>
+            RxApp.MainThreadScheduler.Schedule(() =>
             {
                 Server = "";
                 Username = "";
                 Accessess.Clear();
-            }, RxApp.MainThreadScheduler);
+            });
         }
 
         private bool CheckInput()

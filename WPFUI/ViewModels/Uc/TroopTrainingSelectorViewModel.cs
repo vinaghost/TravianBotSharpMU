@@ -4,17 +4,16 @@ using ReactiveUI;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Reactive.Linq;
+using System.Reactive.Concurrency;
 using WPFUI.Models;
-using WPFUI.ViewModels.Abstract;
 
 namespace WPFUI.ViewModels.Uc
 {
-    public class TroopTrainingSelectorViewModel : ViewModelBase
+    public class TroopTrainingSelectorViewModel : ReactiveObject
     {
         public void LoadData(IEnumerable<TroopInfo> troops, TroopEnums selectedTroop, int min, int max, bool isGreat)
         {
-            Observable.Start(() =>
+            RxApp.MainThreadScheduler.Schedule(() =>
             {
                 Troops.Clear();
                 Troops.Add(new(TroopEnums.None));
@@ -23,7 +22,7 @@ namespace WPFUI.ViewModels.Uc
 
                 FillTime.LoadData(min, max);
                 IsGreat = isGreat;
-            }, RxApp.MainThreadScheduler);
+            });
         }
 
         public (TroopEnums, int, int, bool) GetData()

@@ -7,6 +7,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive;
+using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -35,13 +36,13 @@ namespace WPFUI.ViewModels.Tabs
         private async Task SaveTask()
         {
             if (!CheckInput()) return;
-            _waitingOverlay.Show("saving account");
+            _waitingOverlay.ShowCommand.Execute("saving account").Subscribe();
             await Task.Run(() =>
             {
                 var context = _contextFactory.CreateDbContext();
                 if (context.Accounts.Any(x => x.Username.Equals(Username) && x.Server.Equals(Server)))
                 {
-                    _waitingOverlay.Close();
+                    _waitingOverlay.CloseCommand.Execute().Subscribe();
                     MessageBox.Show("This account was already in TBS", "Warning");
                     return;
                 }
@@ -75,17 +76,17 @@ namespace WPFUI.ViewModels.Tabs
             });
             Clean();
             _eventManager.OnAccountsUpdate();
-            _waitingOverlay.Close();
+            _waitingOverlay.CloseCommand.Execute().Subscribe();
         }
 
         private void Clean()
         {
-            Observable.Start(() =>
+            RxApp.MainThreadScheduler.Schedule(() =>
             {
                 Server = "";
                 Username = "";
                 Accessess.Clear();
-            }, RxApp.MainThreadScheduler);
+            });
         }
 
         private bool CheckInput()

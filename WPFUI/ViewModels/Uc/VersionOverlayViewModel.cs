@@ -11,6 +11,7 @@ namespace WPFUI.ViewModels.Uc
 {
     public class VersionOverlayViewModel : ViewModelBase
     {
+        public ReactiveCommand<Unit, Unit> LoadCommand { get; }
         public ReactiveCommand<Unit, Unit> DiscordCommand { get; }
         public ReactiveCommand<Unit, Unit> LatestVersionCommand { get; }
         public ReactiveCommand<Unit, Unit> OpenCommand { get; }
@@ -24,13 +25,14 @@ namespace WPFUI.ViewModels.Uc
             var currentVersion = Assembly.GetExecutingAssembly().GetName().Version;
             CurrentVersion = new Version(currentVersion.Major, currentVersion.Minor, currentVersion.Build);
 
+            LoadCommand = ReactiveCommand.CreateFromTask(LoadTask);
             DiscordCommand = ReactiveCommand.Create(DiscordTask);
             LatestVersionCommand = ReactiveCommand.Create(LatestVersionTask);
             OpenCommand = ReactiveCommand.Create(OpenTask);
             CloseCommand = ReactiveCommand.Create(CloseTask);
         }
 
-        public async Task Load()
+        private async Task LoadTask()
         {
             var result = await _githubHelper.GetLatestVersion();
             result ??= new Version(30, 4, 1975);

@@ -11,6 +11,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive;
+using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -46,7 +47,7 @@ namespace WPFUI.ViewModels.Uc
         private readonly EditAccountViewModel _editAccountViewModel;
         private readonly DebugViewModel _debugViewModel;
 
-        public AccountTabStore AccountTabStore { get; }
+        public AccountTabStore AccountTabStore { get; } = new();
 
         public MainLayoutViewModel(IDbContextFactory<AppDbContext> contextFactory, IEventManager eventManager, SelectedItemStore selectedItemStore, VersionOverlayViewModel versionWindow, WaitingOverlayViewModel waitingOverlay, ITaskManager taskManager, IChromeManager chromeManager, IPlanManager planManager, NoAccountViewModel noAccountViewModel, AddAccountViewModel addAccountViewModel, AddAccountsViewModel addAccountsViewModel, SettingsViewModel settingsViewModel, HeroViewModel heroViewModel, VillagesViewModel villagesViewModel, FarmingViewModel farmingViewModel, EditAccountViewModel editAccountViewModel, DebugViewModel debugViewModel, ITimerManager timeManager, IAccessHelper accessHelper)
         {
@@ -72,8 +73,6 @@ namespace WPFUI.ViewModels.Uc
             _farmingViewModel = farmingViewModel;
             _editAccountViewModel = editAccountViewModel;
             _debugViewModel = debugViewModel;
-
-            AccountTabStore = new(_noAccountViewModel, _addAccountViewModel, _addAccountsViewModel, _settingsViewModel);
 
             _eventManager.AccountsTableUpdate += OnAccountsTableUpdate;
             _eventManager.AccountStatusUpdate += OnAccountStatusUpdate;
@@ -106,11 +105,12 @@ namespace WPFUI.ViewModels.Uc
         {
             var account = Accounts.FirstOrDefault(x => x.Id == accountId);
             if (account is null) return;
-            Observable.Start(() =>
+
+            RxApp.MainThreadScheduler.Schedule(() =>
             {
                 Status = status;
                 account.Color = status.GetColor().ToMediaColor();
-            }, RxApp.MainThreadScheduler);
+            });
         }
 
         private void OnAccountsTableUpdate()
@@ -122,7 +122,10 @@ namespace WPFUI.ViewModels.Uc
         {
             if (CurrentAccount is null) return;
             if (CurrentAccount.Id != accountId) return;
-            Observable.Start(() => Status = _taskManager.GetAccountStatus(accountId), RxApp.MainThreadScheduler);
+            RxApp.MainThreadScheduler.Schedule(() =>
+            {
+                Status = _taskManager.GetAccountStatus(accountId);
+            });
         }
 
         #endregion Event
@@ -136,30 +139,26 @@ namespace WPFUI.ViewModels.Uc
 
         private void LoadAccountList()
         {
-            Observable.Start(() =>
-            {
-                using var context = _contextFactory.CreateDbContext();
-                var accounts = context.Accounts
-                    .AsList()
-                    .Select(x => new ListBoxItem(x.Id, x.Username, x.Server))
-                    .ToList();
-                return accounts;
-            }, RxApp.TaskpoolScheduler)
-                .ObserveOn(RxApp.MainThreadScheduler)
-                .Subscribe((accounts) =>
-                {
-                    Accounts.Clear();
-                    Accounts.AddRange(accounts);
+            using var context = _contextFactory.CreateDbContext();
+            var accounts = context.Accounts
+                .AsList()
+                .Select(x => new ListBoxItem(x.Id, x.Username, x.Server))
+                .ToList();
 
-                    if (accounts.Any())
-                    {
-                        CurrentAccount = Accounts[0];
-                    }
-                    else
-                    {
-                        CurrentAccount = null;
-                    }
-                });
+            RxApp.MainThreadScheduler.Schedule(() =>
+            {
+                Accounts.Clear();
+                Accounts.AddRange(accounts);
+
+                if (accounts.Any())
+                {
+                    CurrentAccount = Accounts[0];
+                }
+                else
+                {
+                    CurrentAccount = null;
+                }
+            });
         }
 
         #endregion Load
@@ -251,11 +250,11 @@ namespace WPFUI.ViewModels.Uc
             var result = MessageBox.Show(messageBoxText, "Confirm", MessageBoxButton.YesNo, MessageBoxImage.Question);
             if (result == MessageBoxResult.Yes)
             {
-                _waitingOverlay.Show("saving data");
+                _waitingOverlay.ShowCommand.Execute("saving data").Subscribe();
                 context.DeleteAccount(accountId);
                 context.SaveChanges();
                 _eventManager.OnAccountsUpdate();
-                _waitingOverlay.Close();
+                _waitingOverlay.CloseCommand.Execute().Subscribe();
             }
         }
 
@@ -350,7 +349,7 @@ namespace WPFUI.ViewModels.Uc
                 if (current is not null)
                 {
                     _taskManager.StopCurrentTask(index);
-                    _waitingOverlay.Show("waiting current task stops");
+                    _waitingOverlay.ShowCommand.Execute("waiting current task stops").Subscribe();
                     await Task.Run(async () =>
                     {
                         while (current.Stage != TaskStage.Waiting)
@@ -360,7 +359,7 @@ namespace WPFUI.ViewModels.Uc
                             await Task.Delay(500);
                         }
                     });
-                    _waitingOverlay.Close();
+                    _waitingOverlay.CloseCommand.Execute().Subscribe();
                 }
                 _taskManager.UpdateAccountStatus(index, AccountStatus.Paused);
                 return;

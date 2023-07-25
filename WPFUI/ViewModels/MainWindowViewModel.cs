@@ -2,6 +2,7 @@
 using MainCore;
 using MainCore.Enums;
 using MainCore.Helper.Interface;
+using MainCore.Services.Implementations;
 using MainCore.Services.Interface;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -60,98 +61,102 @@ namespace WPFUI.ViewModels
 
         public async Task Load()
         {
+            _waitingOverlay.ShowCommand.Execute("loading data").Subscribe();
             try
             {
-                _waitingOverlay.Show("loading chrome driver");
-                await Task.Run(_chromeManager.LoadDriver);
-
-                _waitingOverlay.Show("loading chrome extension");
-                await Task.Run(_chromeManager.LoadExtension);
-
-                _waitingOverlay.Show("loading useragent data");
-                await _useragentManager.Load();
-
-                _waitingOverlay.Show("loading TBS's database");
-                await Task.Run(MigrateDatabase);
-
-                _waitingOverlay.Show("loading log system");
-                await Task.Run(_logHelper.Init);
-
-                _waitingOverlay.Show("loading main layout");
-                await Task.Delay(100);
-                MainLayoutViewModel = Locator.Current.GetService<MainLayoutViewModel>();
-                await Task.Run(MainLayoutViewModel.LoadData);
+                await ChromeDriverInstaller.Install();
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "Error");
-                _waitingOverlay.Close();
+                _waitingOverlay.CloseCommand.Execute().Subscribe();
                 return;
             }
 
-            _waitingOverlay.Close();
-            await _versionOverlay.Load();
-        }
-
-        private void MigrateDatabase()
-        {
-            using var context = _contextFactory.CreateDbContext();
-            using var scope = App.Container.CreateScope();
-            var migrationRunner = scope.ServiceProvider.GetRequiredService<IMigrationRunner>();
-            if (!context.Database.EnsureCreated())
+            var tasks = new List<Task>
             {
-                migrationRunner.MigrateUp();
-                context.UpdateDatabase();
-            }
-            else
-            {
-                context.AddVersionInfo();
-            }
-            _planManager.Load();
-        }
-
-        private async Task PauseAccounts()
-        {
-            using var context = _contextFactory.CreateDbContext();
-            var accounts = context.Accounts.ToList();
-
-            if (accounts.Any())
-            {
-                var pauseTasks = new List<Task>();
-                foreach (var account in accounts)
+                Task.Run(() =>
                 {
-                    pauseTasks.Add(Pause(account.Id));
-                }
-                await Task.WhenAll(pauseTasks);
-            }
+                    _chromeManager.LoadExtension();
+                }),
+
+                Task.Run(async () =>
+                {
+                    await _useragentManager.Load();
+                }),
+                Task.Run(() =>
+                {
+                    using var context = _contextFactory.CreateDbContext();
+                    using var scope = App.Container.CreateScope();
+                    var migrationRunner = scope.ServiceProvider.GetRequiredService<IMigrationRunner>();
+                    if (!context.Database.EnsureCreated())
+                    {
+                        migrationRunner.MigrateUp();
+                        context.UpdateDatabase();
+                    }
+                    else
+                    {
+                        context.AddVersionInfo();
+                    }
+                    _planManager.Load();
+                }),
+
+                Task.Run(() =>
+                {
+                    _logHelper.Init();
+                })
+            };
+
+            await Task.WhenAll(tasks);
+            MainLayoutViewModel = Locator.Current.GetService<MainLayoutViewModel>();
+            MainLayoutViewModel.LoadData();
+            _versionOverlay.LoadCommand.Execute().Subscribe();
+            _waitingOverlay.CloseCommand.Execute().Subscribe();
         }
 
         public async Task ClosingTask(CancelEventArgs e)
         {
-            _waitingOverlay.Show("pausing accounts");
-            await PauseAccounts();
-
-            _waitingOverlay.Show("saving TBS's database");
-            await Task.Run(_planManager.Save);
-
-            _waitingOverlay.Show("deleting proxy's cache");
-            await Task.Run(() =>
+            _waitingOverlay.ShowCommand.Execute("saving data").Subscribe();
+            await Task.Run(async () =>
             {
+                using var context = _contextFactory.CreateDbContext();
+                var accounts = context.Accounts.ToList();
+
+                if (accounts.Any())
+                {
+                    var pauseTasks = new List<Task>();
+                    foreach (var account in accounts)
+                    {
+                        pauseTasks.Add(Pause(account.Id));
+                    }
+                    await Task.WhenAll(pauseTasks);
+                }
+
+                _planManager.Save();
+
                 var path = Path.Combine(AppContext.BaseDirectory, "Plugins");
                 if (Directory.Exists(path)) Directory.Delete(path, true);
             });
 
-            _waitingOverlay.Show("saving log files");
-            await Task.Run(_logHelper.Shutdown);
+            await Task.Run(() =>
+            {
+                _logHelper.Shutdown();
+            });
 
-            _waitingOverlay.Show("shuting down chrome driver services");
-            await Task.Run(_chromeManager.Shutdown);
+            await Task.Run(() =>
+            {
+                _chromeManager.Shutdown();
+            });
 
-            _waitingOverlay.Show("shuting down http clients");
-            await Task.Run(_restClientManager.Shutdown);
+            await Task.Run(() =>
+            {
+                _restClientManager.Shutdown();
+            });
 
-            _waitingOverlay.Show("shuting down timer");
-            await Task.Run(_timerManager.Shutdown);
+            await Task.Run(() =>
+            {
+                _timerManager.Shutdown();
+            });
         }
 
         private async Task Pause(int index)
@@ -169,17 +174,12 @@ namespace WPFUI.ViewModels
                 _taskManager.UpdateAccountStatus(index, AccountStatus.Pausing);
                 if (current is not null)
                 {
-                    _waitingOverlay.Show("waiting current task stops");
-                    await Task.Run(async () =>
+                    _waitingOverlay.ShowCommand.Execute("waiting current task stops").Subscribe();
+                    await Task.Run(() =>
                     {
-                        while (current.Stage != TaskStage.Waiting)
-                        {
-                            current = _taskManager.GetCurrentTask(index);
-                            if (current is null) return;
-                            await Task.Delay(500);
-                        }
+                        while (current.Stage != TaskStage.Waiting) { }
                     });
-                    _waitingOverlay.Close();
+                    _waitingOverlay.CloseCommand.Execute().Subscribe();
                 }
                 _taskManager.UpdateAccountStatus(index, AccountStatus.Paused);
                 return;

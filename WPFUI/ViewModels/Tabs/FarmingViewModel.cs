@@ -11,6 +11,7 @@ using System.Collections.ObjectModel;
 using System.Drawing;
 using System.Linq;
 using System.Reactive;
+using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -102,7 +103,7 @@ namespace WPFUI.ViewModels.Tabs
         public async Task SaveData()
         {
             if (CurrentFarm is null) return;
-            _waitingOverlay.Show("Saving ...");
+            _waitingOverlay.ShowCommand.Execute("Saving ...").Subscribe();
             await Task.Run(() =>
             {
                 using var context = _contextFactory.CreateDbContext();
@@ -113,7 +114,7 @@ namespace WPFUI.ViewModels.Tabs
                 context.Update(settings);
                 context.SaveChanges();
             });
-            _waitingOverlay.Close();
+            _waitingOverlay.CloseCommand.Execute().Subscribe();
             MessageBox.Show("Saved");
         }
 
@@ -134,7 +135,7 @@ namespace WPFUI.ViewModels.Tabs
         public async Task ActiveTask()
         {
             if (CurrentFarm is null) return;
-            _waitingOverlay.Show("Processing ...");
+            _waitingOverlay.ShowCommand.Execute("Processing ...").Subscribe();
             var active = true;
             await Task.Run(() =>
             {
@@ -145,7 +146,7 @@ namespace WPFUI.ViewModels.Tabs
                 context.Update(setting);
                 context.SaveChanges();
             });
-            _waitingOverlay.Close();
+            _waitingOverlay.CloseCommand.Execute().Subscribe();
             MessageBox.Show("Done");
             CurrentFarm.Color = active ? Color.ForestGreen.ToMediaColor() : Color.Red.ToMediaColor();
             ContentButton = active ? "Deactive" : "Active";
@@ -178,27 +179,21 @@ namespace WPFUI.ViewModels.Tabs
 
         private void LoadData(int id)
         {
-            Observable.Start(() =>
-            {
-                using var context = _contextFactory.CreateDbContext();
-                var farms = context.Farms
-                    .Where(x => x.AccountId == id)
-                    .AsList()
-                    .Select(farm =>
-                    {
-                        var farmSetting = context.FarmsSettings.Find(farm.Id);
-                        var color = farmSetting.IsActive ? Color.ForestGreen.ToMediaColor() : Color.Red.ToMediaColor();
-                        return new ListBoxItem(farm.Id, farm.Name, color);
-                    }).ToList();
+            using var context = _contextFactory.CreateDbContext();
+            var farms = context.Farms
+                .Where(x => x.AccountId == id)
+                .AsList()
+                .Select(farm =>
+                {
+                    var farmSetting = context.FarmsSettings.Find(farm.Id);
+                    var color = farmSetting.IsActive ? Color.ForestGreen.ToMediaColor() : Color.Red.ToMediaColor();
+                    return new ListBoxItem(farm.Id, farm.Name, color);
+                }).ToList();
 
-                var settings = context.AccountsSettings.Find(_selectedItemStore.Account.Id);
+            var settings = context.AccountsSettings.Find(_selectedItemStore.Account.Id);
 
-                return (farms, settings);
-            }, RxApp.TaskpoolScheduler)
-            .ObserveOn(RxApp.MainThreadScheduler)
-            .Subscribe((data) =>
+            RxApp.MainThreadScheduler.Schedule(() =>
             {
-                var (farms, settings) = data;
                 FarmList.Clear();
                 FarmList.AddRange(farms);
                 if (farms.Any())

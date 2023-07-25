@@ -10,7 +10,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Reactive;
-using System.Reactive.Linq;
+using System.Reactive.Concurrency;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows;
@@ -110,55 +110,48 @@ namespace WPFUI.ViewModels.Tabs.Villages
 
         private void LoadData(int villageId)
         {
-            Observable.Start(() =>
+            using var context = _contextFactory.CreateDbContext();
+            var settings = context.VillagesSettings.Find(villageId);
+
+            RxApp.MainThreadScheduler.Schedule(() =>
             {
-                using var context = _contextFactory.CreateDbContext();
-                var settings = context.VillagesSettings.Find(villageId);
+                UseHeroRes = settings.IsUseHeroRes;
+                IgnoreRoman = settings.IsIgnoreRomanAdvantage;
+                IsAutoRefresh = settings.IsAutoRefresh;
+                IsAutoNPCOverflow = settings.IsNPCOverflow;
 
-                var account = context.Villages.Find(villageId);
-                var accountInfo = context.AccountsInfo.Find(account.AccountId);
-                var tribe = accountInfo.Tribe;
+                IsAutoClaimQuest = settings.IsAutoCollectReward;
+            });
+            AutoComplete.LoadData(settings.IsInstantComplete, settings.InstantCompleteTime);
+            WatchAds.LoadData(settings.IsAdsUpgrade, settings.AdsUpgradeTime);
 
-                return (settings, tribe);
-            }, RxApp.TaskpoolScheduler)
-                .ObserveOn(RxApp.MainThreadScheduler)
-                .Subscribe((data) =>
-                {
-                    var (settings, tribe) = data;
-                    UseHeroRes = settings.IsUseHeroRes;
-                    IgnoreRoman = settings.IsIgnoreRomanAdvantage;
-                    IsAutoRefresh = settings.IsAutoRefresh;
-                    IsAutoNPCOverflow = settings.IsNPCOverflow;
+            AutoRefresh.LoadData(settings.AutoRefreshTimeMin, settings.AutoRefreshTimeMax);
 
-                    AutoComplete.LoadData(settings.IsInstantComplete, settings.InstantCompleteTime);
-                    WatchAds.LoadData(settings.IsAdsUpgrade, settings.AdsUpgradeTime);
+            AutoNPCCrop.LoadData(settings.IsAutoNPC, settings.AutoNPCPercent);
+            AutoNPCResource.LoadData(settings.IsAutoNPCWarehouse, settings.AutoNPCWarehousePercent);
 
-                    AutoRefresh.LoadData(settings.AutoRefreshTimeMin, settings.AutoRefreshTimeMax);
+            RatioNPC.LoadData(settings.AutoNPCWood, settings.AutoNPCClay, settings.AutoNPCIron, settings.AutoNPCCrop);
 
-                    AutoNPCCrop.LoadData(settings.IsAutoNPC, settings.AutoNPCPercent);
-                    AutoNPCResource.LoadData(settings.IsAutoNPCWarehouse, settings.AutoNPCWarehousePercent);
+            TimeTrain.LoadData(settings.TroopTimeMin, settings.TroopTimeMax);
+            IsMaxTrain = settings.IsMaxTrain;
 
-                    RatioNPC.LoadData(settings.AutoNPCWood, settings.AutoNPCClay, settings.AutoNPCIron, settings.AutoNPCCrop);
-
-                    TimeTrain.LoadData(settings.TroopTimeMin, settings.TroopTimeMax);
-                    IsMaxTrain = settings.IsMaxTrain;
-
-                    BarrackTraining.LoadData(tribe.GetInfantryTroops().Select(x => new TroopInfo(x)), (TroopEnums)settings.BarrackTroop, settings.BarrackTroopTimeMin, settings.BarrackTroopTimeMax, settings.IsGreatBarrack);
-                    StableTraining.LoadData(tribe.GetCavalryTroops().Select(x => new TroopInfo(x)), (TroopEnums)settings.StableTroop, settings.StableTroopTimeMin, settings.StableTroopTimeMax, settings.IsGreatStable);
-                    WorkshopTraining.LoadData(tribe.GetSiegeTroops().Select(x => new TroopInfo(x)), (TroopEnums)settings.WorkshopTroop, settings.WorkshopTroopTimeMin, settings.WorkshopTroopTimeMax, false);
-                    IsAutoClaimQuest = settings.IsAutoCollectReward;
-                });
+            var account = context.Villages.Find(villageId);
+            var accountInfo = context.AccountsInfo.Find(account.AccountId);
+            var tribe = accountInfo.Tribe;
+            BarrackTraining.LoadData(tribe.GetInfantryTroops().Select(x => new TroopInfo(x)), (TroopEnums)settings.BarrackTroop, settings.BarrackTroopTimeMin, settings.BarrackTroopTimeMax, settings.IsGreatBarrack);
+            StableTraining.LoadData(tribe.GetCavalryTroops().Select(x => new TroopInfo(x)), (TroopEnums)settings.StableTroop, settings.StableTroopTimeMin, settings.StableTroopTimeMax, settings.IsGreatStable);
+            WorkshopTraining.LoadData(tribe.GetSiegeTroops().Select(x => new TroopInfo(x)), (TroopEnums)settings.WorkshopTroop, settings.WorkshopTroopTimeMin, settings.WorkshopTroopTimeMax, false);
         }
 
         private async Task SaveTask()
         {
-            _waitingOverlay.Show("saving account's settings");
+            _waitingOverlay.ShowCommand.Execute("saving account's settings").Subscribe();
             await Task.Run(() =>
             {
                 Save(VillageId);
                 TaskBasedSetting(VillageId, AccountId);
             });
-            _waitingOverlay.Close();
+            _waitingOverlay.CloseCommand.Execute().Subscribe();
 
             MessageBox.Show("Saved.");
         }
@@ -201,19 +194,20 @@ namespace WPFUI.ViewModels.Tabs.Villages
         {
             using var context = _contextFactory.CreateDbContext();
             var villageId = VillageId;
+            var setting = context.VillagesSettings.Find(villageId);
+            var jsonString = JsonSerializer.Serialize(setting);
+            var village = context.Villages.Find(villageId);
             var svd = new SaveFileDialog
             {
                 InitialDirectory = AppContext.BaseDirectory,
                 Filter = "TBS files (*.tbs)|*.tbs|All files (*.*)|*.*",
                 FilterIndex = 1,
                 RestoreDirectory = true,
-                FileName = $"{villageId}_settings.tbs",
+                FileName = $"{village.Name}_settings.tbs",
             };
 
             if (svd.ShowDialog() == true)
             {
-                var setting = context.VillagesSettings.Find(villageId);
-                var jsonString = JsonSerializer.Serialize(setting);
                 File.WriteAllText(svd.FileName, jsonString);
             }
         }
@@ -262,7 +256,7 @@ namespace WPFUI.ViewModels.Tabs.Villages
             using var context = _contextFactory.CreateDbContext();
             var settings = context.VillagesSettings.Find(villageId);
             {
-                var tasks = list.OfType<InstantUpgrade>().ToList();
+                var tasks = list.Where(x => x is InstantUpgrade);
                 if (settings.IsInstantComplete)
                 {
                     if (!tasks.Any())
@@ -285,7 +279,7 @@ namespace WPFUI.ViewModels.Tabs.Villages
                 }
             }
             {
-                var tasks = list.OfType<RefreshVillage>().ToList();
+                var tasks = list.OfType<RefreshVillage>();
                 if (settings.IsAutoRefresh)
                 {
                     if (!tasks.Any(x => x.VillageId == villageId))
@@ -303,7 +297,7 @@ namespace WPFUI.ViewModels.Tabs.Villages
                 }
             }
             {
-                var tasks = list.OfType<TrainTroopsTask>().ToList();
+                var tasks = list.OfType<TrainTroopsTask>();
                 if (settings.BarrackTroop != 0 || settings.StableTroop != 0 || settings.WorkshopTroop != 0)
                 {
                     if (!tasks.Any(x => x.VillageId == villageId))

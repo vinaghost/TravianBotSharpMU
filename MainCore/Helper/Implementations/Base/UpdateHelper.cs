@@ -343,12 +343,12 @@ namespace MainCore.Helper.Implementations.Base
 
             var chromeBrowser = _chromeManager.Get(accountId);
             var html = chromeBrowser.GetHtml();
+            var numAdventures = _heroSectionParser.GetAdventureNum(html);
             var foundAdventures = _heroSectionParser.GetAdventures(html);
+
             using var context = _contextFactory.CreateDbContext();
             var heroAdventures = context.Adventures.Where(x => x.AccountId == accountId).ToList();
-            var numberAdventure = _heroSectionParser.GetAdventureNum(html);
-
-            if (foundAdventures.Count == 0 || numberAdventure == 0)
+            if (foundAdventures.Count == 0 || numAdventures == 0)
             {
                 context.Adventures.RemoveRange(heroAdventures);
                 context.SaveChanges();

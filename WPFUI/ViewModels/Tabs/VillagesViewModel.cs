@@ -6,6 +6,7 @@ using ReactiveUI;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using WPFUI.Models;
 using WPFUI.Store;
@@ -18,7 +19,7 @@ namespace WPFUI.ViewModels.Tabs
     {
         private readonly IDbContextFactory<AppDbContext> _contextFactory;
 
-        private readonly VillageTabStore _villageTabStore;
+        private readonly VillageTabStore _villageTabStore = new();
 
         private readonly NoVillageViewModel _noVillageViewModel;
         private readonly BuildViewModel _buildViewModel;
@@ -40,8 +41,6 @@ namespace WPFUI.ViewModels.Tabs
             _villageTroopsViewModel = villageTroopsViewModel;
             _infoViewModel = infoViewModel;
 
-            _villageTabStore = new(_noVillageViewModel, _buildViewModel);
-
             var currentVillageObservable = this.WhenAnyValue(vm => vm.CurrentVillage);
             currentVillageObservable.BindTo(_selectedItemStore, vm => vm.Village);
             currentVillageObservable.Subscribe(x =>
@@ -59,31 +58,27 @@ namespace WPFUI.ViewModels.Tabs
 
         private void LoadVillageList(int accountId)
         {
-            Observable.Start(() =>
+            using var context = _contextFactory.CreateDbContext();
+            var villages = context.Villages
+                .Where(x => x.AccountId == accountId)
+                .OrderBy(x => x.Name)
+                .AsList()
+                .Select(x => new ListBoxItem(x.Id, x.Name, x.X, x.Y))
+                .ToList();
+
+            RxApp.MainThreadScheduler.Schedule(() =>
             {
-                using var context = _contextFactory.CreateDbContext();
-                var villages = context.Villages
-                    .Where(x => x.AccountId == accountId)
-                    .OrderBy(x => x.Name)
-                    .AsList()
-                    .Select(x => new ListBoxItem(x.Id, x.Name, x.X, x.Y))
-                    .ToList();
-                return villages;
-            }, RxApp.TaskpoolScheduler)
-                .ObserveOn(RxApp.MainThreadScheduler)
-                .Subscribe((villages) =>
+                Villages.Clear();
+                Villages.AddRange(villages);
+                if (villages.Any())
                 {
-                    Villages.Clear();
-                    Villages.AddRange(villages);
-                    if (villages.Any())
-                    {
-                        CurrentVillage = Villages.First();
-                    }
-                    else
-                    {
-                        CurrentVillage = null;
-                    }
-                });
+                    CurrentVillage = Villages.First();
+                }
+                else
+                {
+                    CurrentVillage = null;
+                }
+            });
         }
 
         public ObservableCollection<ListBoxItem> Villages { get; } = new();

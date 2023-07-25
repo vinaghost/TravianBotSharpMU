@@ -7,7 +7,7 @@
     mc:Ignorable="d"
     xmlns:v="clr-namespace:WPFUI.Views.Uc"
     xmlns:views="clr-namespace:WPFUI.Views.Tabs"
-    d:DesignHeight="450"  d:DesignWidth="800">
+    d:DesignHeight="450" d:DesignWidth="800">
     <Grid Margin="5">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="10*" />
@@ -55,7 +55,7 @@
             </Grid>
         </Grid>
         <TabControl Grid.Column="1" Margin="10,0,0,0">
-            <TabItem x:Name="NoAccountTab" Header="No account" IsSelected="True" Visibility="Visible">
+            <TabItem x:Name="NoAccountTab" Header="No account">
                 <views:NoAccountTab x:Name="NoAccount" />
             </TabItem>
             <TabItem x:Name="AddAccountTab" Header="Add account">

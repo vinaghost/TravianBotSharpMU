@@ -9,7 +9,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive;
-using System.Reactive.Linq;
+using System.Reactive.Concurrency;
 using WPFUI.Models;
 using WPFUI.Store;
 using WPFUI.ViewModels.Abstract;
@@ -37,9 +37,7 @@ namespace WPFUI.ViewModels.Tabs
 
         protected override void Init(int accountId)
         {
-            LoadAdventures(accountId);
-            LoadInventory(accountId);
-            LoadInfo(accountId);
+            LoadData(accountId);
         }
 
         private void OnheroInventoryUpdate(int accountId)
@@ -63,57 +61,56 @@ namespace WPFUI.ViewModels.Tabs
             LoadInfo(accountId);
         }
 
+        private void LoadData(int accountId)
+        {
+            LoadAdventures(accountId);
+            LoadInventory(accountId);
+            LoadInfo(accountId);
+        }
+
         private void LoadAdventures(int accountId)
         {
-            Observable.Start(() =>
-            {
-                using var context = _contextFactory.CreateDbContext();
-                var adventures = context.Adventures
-                    .Where(x => x.AccountId == accountId)
-                    .Select(adventure => new AdventureInfo
-                    {
-                        Difficulty = adventure.Difficulty.ToString(),
-                        X = adventure.X,
-                        Y = adventure.Y,
-                    })
-                    .ToList();
-                return adventures;
-            }, RxApp.TaskpoolScheduler)
-                .ObserveOn(RxApp.MainThreadScheduler)
-                .Subscribe((adventures) =>
+            using var context = _contextFactory.CreateDbContext();
+            var adventures = context.Adventures
+                .Where(x => x.AccountId == accountId)
+                .Select(adventure => new AdventureInfo
                 {
-                    Adventures.Clear();
-                    Adventures.AddRange(adventures);
-                    AdventureNum = Adventures.Count.ToString();
-                });
+                    Difficulty = adventure.Difficulty.ToString(),
+                    X = adventure.X,
+                    Y = adventure.Y,
+                })
+                .ToList();
+
+            RxApp.MainThreadScheduler.Schedule(() =>
+            {
+                AdventureNum = Adventures.Count.ToString();
+                Adventures.Clear();
+                Adventures.AddRange(adventures);
+            });
         }
 
         private void LoadInventory(int accountId)
         {
-            Observable.Start(() =>
-            {
-                using var context = _contextFactory.CreateDbContext();
-                var inventory = context.HeroesItems
-                    .Where(x => x.AccountId == accountId)
-                    .AsList()
-                    .Select(item =>
+            using var context = _contextFactory.CreateDbContext();
+            var inventory = context.HeroesItems
+                .Where(x => x.AccountId == accountId)
+                .AsList()
+                .Select(item =>
+                {
+                    var itemStr = item.Item.ToString();
+                    var itemName = new string(itemStr.Where(x => char.IsLetter(x)).ToArray());
+                    var lastChar = itemStr[^1];
+                    var tier = char.IsDigit(lastChar) ? int.Parse(lastChar.ToString()) : 0;
+                    return new ItemInfo()
                     {
-                        var itemStr = item.Item.ToString();
-                        var itemName = new string(itemStr.Where(x => char.IsLetter(x)).ToArray());
-                        var lastChar = itemStr[^1];
-                        var tier = char.IsDigit(lastChar) ? int.Parse(lastChar.ToString()) : 0;
-                        return new ItemInfo()
-                        {
-                            Item = itemName.EnumStrToString(),
-                            Amount = item.Count,
-                            Tier = tier,
-                        };
-                    })
-                    .ToList();
-                return inventory;
-            }, RxApp.TaskpoolScheduler)
-                .ObserveOn(RxApp.MainThreadScheduler)
-                .Subscribe((inventory) =>
+                        Item = itemName.EnumStrToString(),
+                        Amount = item.Count,
+                        Tier = tier,
+                    };
+                })
+                .ToList();
+
+            RxApp.MainThreadScheduler.Schedule(() =>
             {
                 Inventory.Clear();
                 Inventory.AddRange(inventory);
@@ -122,18 +119,13 @@ namespace WPFUI.ViewModels.Tabs
 
         private void LoadInfo(int accountId)
         {
-            Observable.Start(() =>
+            using var context = _contextFactory.CreateDbContext();
+            var info = context.Heroes.Find(accountId);
+            RxApp.MainThreadScheduler.Schedule(() =>
             {
-                using var context = _contextFactory.CreateDbContext();
-                var info = context.Heroes.Find(accountId);
-                return info;
-            }, RxApp.TaskpoolScheduler)
-                .ObserveOn(RxApp.MainThreadScheduler)
-                .Subscribe((info) =>
-                {
-                    Health = info.Health.ToString();
-                    Status = info.Status.ToString().EnumStrToString();
-                });
+                Health = info.Health.ToString();
+                Status = info.Status.ToString().EnumStrToString();
+            });
         }
 
         private void AdventuresTask()

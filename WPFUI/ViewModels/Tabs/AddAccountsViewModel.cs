@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive;
+using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -42,7 +43,7 @@ namespace WPFUI.ViewModels.Tabs
         private async Task SaveTask()
         {
             if (!IsVaildInput()) return;
-            _waitingOverlay.Show("adding accounts");
+            _waitingOverlay.ShowCommand.Execute("adding accounts").Subscribe();
 
             await Task.Run(() =>
             {
@@ -79,7 +80,7 @@ namespace WPFUI.ViewModels.Tabs
             });
             Clean();
             _eventManager.OnAccountsUpdate();
-            _waitingOverlay.Close();
+            _waitingOverlay.CloseCommand.Execute().Subscribe();
             MessageBox.Show($"Added account to TBS's database", "Success");
         }
 
@@ -107,11 +108,11 @@ namespace WPFUI.ViewModels.Tabs
 
         private void Clean()
         {
-            Observable.Start(() =>
+            RxApp.MainThreadScheduler.Schedule(() =>
             {
                 InputText = "";
                 Accounts.Clear();
-            }, RxApp.MainThreadScheduler);
+            });
         }
 
         private bool IsVaildInput()

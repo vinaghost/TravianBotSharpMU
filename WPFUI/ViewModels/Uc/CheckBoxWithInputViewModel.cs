@@ -1,18 +1,17 @@
 ﻿using ReactiveUI;
-using System.Reactive.Linq;
-using WPFUI.ViewModels.Abstract;
+using System.Reactive.Concurrency;
 
 namespace WPFUI.ViewModels.Uc
 {
-    public class CheckBoxWithInputViewModel : ViewModelBase
+    public class CheckBoxWithInputViewModel : ReactiveObject
     {
         public void LoadData(bool isChecked, int value)
         {
-            Observable.Start(() =>
+            RxApp.MainThreadScheduler.Schedule(() =>
             {
                 IsChecked = isChecked;
                 Value = value;
-            }, RxApp.MainThreadScheduler);
+            });
         }
 
         public (bool, int) GetData()

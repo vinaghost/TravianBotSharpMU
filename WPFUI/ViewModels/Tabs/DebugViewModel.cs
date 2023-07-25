@@ -11,7 +11,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reactive;
-using System.Reactive.Linq;
+using System.Reactive.Concurrency;
 using WPFUI.Models;
 using WPFUI.Store;
 using WPFUI.ViewModels.Abstract;
@@ -83,43 +83,38 @@ namespace WPFUI.ViewModels.Tabs
         {
             if (!IsActive) return;
             if (AccountId != accountId) return;
-            Observable.Start(() => Logs.Insert(0, logMessage), RxApp.MainThreadScheduler);
+            RxApp.MainThreadScheduler.Schedule(() =>
+            {
+                Logs.Insert(0, logMessage);
+            });
         }
 
         private void LoadLogs(int accountId)
         {
-            Observable.Start(() =>
+            var logs = _logHelper.GetLog(accountId);
+
+            RxApp.MainThreadScheduler.Schedule(() =>
             {
-                var logs = _logHelper.GetLog(accountId);
-                return logs;
-            }, RxApp.TaskpoolScheduler)
-                .ObserveOn(RxApp.MainThreadScheduler)
-                .Subscribe(result =>
-                {
-                    Logs.Clear();
-                    Logs.AddRange(result);
-                });
+                Logs.Clear();
+                Logs.AddRange(logs);
+            });
         }
 
         private void LoadTask(int accountId)
         {
-            Observable.Start(() =>
+            var tasks = _taskManager.GetList(accountId);
+            var listItem = tasks.Select(item => new TaskModel()
             {
-                var tasks = _taskManager.GetList(accountId);
-                var listItem = tasks.Select(item => new TaskModel()
-                {
-                    Task = item.GetName(),
-                    ExecuteAt = item.ExecuteAt,
-                    Stage = item.Stage,
-                }).ToList();
-                return listItem;
-            }, RxApp.TaskpoolScheduler)
-                .ObserveOn(RxApp.MainThreadScheduler)
-                .Subscribe(result =>
-                {
-                    Tasks.Clear();
-                    Tasks.AddRange(result);
-                });
+                Task = item.GetName(),
+                ExecuteAt = item.ExecuteAt,
+                Stage = item.Stage,
+            }).ToList();
+
+            RxApp.MainThreadScheduler.Schedule(() =>
+            {
+                Tasks.Clear();
+                Tasks.AddRange(listItem);
+            });
         }
 
         public ObservableCollection<TaskModel> Tasks { get; } = new();

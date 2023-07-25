@@ -14,7 +14,6 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Reactive;
-using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Text.Json;
 using System.Windows;
@@ -80,13 +79,20 @@ namespace WPFUI.ViewModels.Tabs.Villages
 
         protected override void Init(int villageId)
         {
-            LoadData(villageId);
+            LoadBuildings(villageId);
+            LoadCurrentlyBuildings(villageId);
+            LoadNormalBuild(villageId, CurrentBuilding?.Id ?? -1);
+            LoadQueueBuilding(villageId);
+
+            CurrentStrategy ??= ComboStrategy[0];
+            CurrentResType ??= ComboResTypes[0];
         }
 
         private void OnQueueUpdate(int villageId)
         {
             if (!IsActive) return;
             if (villageId != VillageId) return;
+
             LoadQueueBuilding(villageId);
             LoadBuildings(villageId);
         }
@@ -105,20 +111,6 @@ namespace WPFUI.ViewModels.Tabs.Villages
             LoadBuildings(villageId);
         }
 
-        private void LoadData(int villageId)
-        {
-            LoadBuildings(villageId);
-            LoadCurrentlyBuildings(villageId);
-            LoadNormalBuild(villageId, CurrentBuilding?.Id ?? -1);
-            LoadQueueBuilding(villageId);
-
-            RxApp.MainThreadScheduler.Schedule(() =>
-            {
-                CurrentStrategy ??= ComboStrategy[0];
-                CurrentResType ??= ComboResTypes[0];
-            });
-        }
-
         private void LoadBuildings(int villageId)
         {
             var oldIndex = -1;
@@ -127,63 +119,79 @@ namespace WPFUI.ViewModels.Tabs.Villages
                 oldIndex = CurrentBuilding.Id;
             }
 
-            var buildings = _databaseHelper.GetVillageBuildings(villageId);
-            var uiBuildings = buildings
-                .Select(building =>
-                {
-                    var (plannedBuild, currentBuild) = _databaseHelper.GetInProgressBuilding(villageId, building.Id);
-
-                    var level = building.Level.ToString();
-                    var type = building.Type;
-                    if (currentBuild is not null)
-                    {
-                        level = $"{level} -> ({currentBuild.Level})";
-                        type = currentBuild.Type;
-                    }
-                    if (plannedBuild is not null)
-                    {
-                        level = $"{level} -> [{plannedBuild.Level}]";
-                        type = plannedBuild.Building;
-                    }
-                    return new ListBoxItem(building.Id, $"[{building.Id}] {type} | {level}", type.GetColor());
-                })
-                .ToList();
-
-            RxApp.MainThreadScheduler.Schedule(() =>
+            Observable.Start(() =>
             {
-                Update(Buildings, uiBuildings);
-                if (uiBuildings.Any())
+                var buildings = _databaseHelper.GetVillageBuildings(villageId);
+                var uiBuildings = buildings
+                    .Select(building =>
+                    {
+                        var (plannedBuild, currentBuild) = _databaseHelper.GetInProgressBuilding(villageId, building.Id);
+
+                        var level = building.Level.ToString();
+                        var type = building.Type;
+                        if (currentBuild is not null)
+                        {
+                            level = $"{level} -> ({currentBuild.Level})";
+                            type = currentBuild.Type;
+                        }
+                        if (plannedBuild is not null)
+                        {
+                            level = $"{level} -> [{plannedBuild.Level}]";
+                            type = plannedBuild.Building;
+                        }
+                        return new ListBoxItem(building.Id, $"[{building.Id}] {type} | {level}", type.GetColor());
+                    })
+                    .ToList();
+                return uiBuildings;
+            }, RxApp.TaskpoolScheduler)
+                .ObserveOn(RxApp.MainThreadScheduler)
+                .Subscribe(uiBuildings =>
                 {
-                    if (oldIndex == -1)
+                    Buildings.Clear();
+                    Buildings.AddRange(uiBuildings);
+                    if (uiBuildings.Any())
                     {
-                        CurrentBuilding = uiBuildings.First();
+                        if (oldIndex == -1)
+                        {
+                            CurrentBuilding = uiBuildings.First();
+                        }
+                        else
+                        {
+                            var build = uiBuildings.FirstOrDefault(x => x.Id == oldIndex);
+                            CurrentBuilding = build;
+                        }
                     }
-                    else
-                    {
-                        var build = uiBuildings.FirstOrDefault(x => x.Id == oldIndex);
-                        CurrentBuilding = build;
-                    }
-                }
-            });
+                });
         }
 
         public void LoadCurrentlyBuildings(int villageId)
         {
-            var buildings = _databaseHelper.GetVillageCurrentlyBuildings(villageId)
+            Observable.Start(() =>
+            {
+                var buildings = _databaseHelper.GetVillageCurrentlyBuildings(villageId)
                .Select(building => new ListBoxItem(building.Id, $"{building.Type} - level {building.Level} complete at {building.CompleteTime}", BLACK))
                .ToList();
-
-            RxApp.MainThreadScheduler.Schedule(() =>
-            {
-                Update(CurrentlyBuildings, buildings);
-            });
+                return buildings;
+            }, RxApp.TaskpoolScheduler)
+                .ObserveOn(RxApp.MainThreadScheduler)
+                .Subscribe(buildings =>
+                {
+                    CurrentlyBuildings.Clear();
+                    CurrentlyBuildings.AddRange(buildings);
+                });
         }
 
         private void LoadNormalBuild(int villageId, int location)
         {
-            var (buildings, level) = GetDataNormalBuild(villageId, location);
-            RxApp.MainThreadScheduler.Schedule(() =>
+            Observable.Start(() =>
             {
+                var (buildings, level) = GetDataNormalBuild(villageId, location);
+                return (buildings, level);
+            }, RxApp.TaskpoolScheduler)
+                .ObserveOn(RxApp.MainThreadScheduler)
+                .Subscribe(data =>
+            {
+                var (buildings, level) = data;
                 NormalBuildings.Clear();
                 NormalBuildings.AddRange(buildings);
                 if (buildings.Count > 0)
@@ -231,31 +239,35 @@ namespace WPFUI.ViewModels.Tabs.Villages
             {
                 oldIndex = CurrentQueueBuilding.Id;
             }
-
-            var queueBuildings = _planManager.GetList(villageId, false);
-            var buildings = queueBuildings
-                .Select(building =>
-                {
-                    return new ListBoxItem(queueBuildings.IndexOf(building), $"{building.Content}", Color.FromRgb(0, 0, 0));
-                })
-                .ToList();
-
-            RxApp.MainThreadScheduler.Schedule(() =>
+            Observable.Start(() =>
             {
-                Update(QueueBuildings, buildings);
-                if (buildings.Any())
+                var queueBuildings = _planManager.GetList(villageId, false);
+                var buildings = queueBuildings
+                    .Select(building =>
+                    {
+                        return new ListBoxItem(queueBuildings.IndexOf(building), $"{building.Content}", Color.FromRgb(0, 0, 0));
+                    })
+                    .ToList();
+                return buildings;
+            }, RxApp.TaskpoolScheduler)
+                .ObserveOn(RxApp.MainThreadScheduler)
+                .Subscribe(buildings =>
                 {
-                    if (oldIndex == -1)
+                    QueueBuildings.Clear();
+                    QueueBuildings.AddRange(buildings);
+                    if (buildings.Any())
                     {
-                        CurrentQueueBuilding = buildings.First();
+                        if (oldIndex == -1)
+                        {
+                            CurrentQueueBuilding = buildings.First();
+                        }
+                        else
+                        {
+                            var build = buildings.FirstOrDefault(x => x.Id == oldIndex);
+                            CurrentQueueBuilding = build;
+                        }
                     }
-                    else
-                    {
-                        var build = buildings.FirstOrDefault(x => x.Id == oldIndex);
-                        CurrentQueueBuilding = build;
-                    }
-                }
-            });
+                });
         }
 
         #endregion LoadData
@@ -377,16 +389,14 @@ namespace WPFUI.ViewModels.Tabs.Villages
         {
             using var context = _contextFactory.CreateDbContext();
             var accountId = AccountId;
-            var account = context.Accounts.Find(accountId);
             var villageId = VillageId;
-            var village = context.Villages.Find(villageId);
             var ofd = new OpenFileDialog
             {
                 InitialDirectory = AppContext.BaseDirectory,
                 Filter = "TBS files (*.tbs)|*.tbs|All files (*.*)|*.*",
                 FilterIndex = 1,
                 RestoreDirectory = true,
-                FileName = $"{village.Name.Replace('.', '_')}_{account.Username}_queuebuildings.tbs",
+                FileName = $"{villageId}_{accountId}_queuebuildings.tbs",
             };
 
             if (ofd.ShowDialog() == true)
@@ -415,20 +425,18 @@ namespace WPFUI.ViewModels.Tabs.Villages
             var villageId = VillageId;
             var queueBuildings = _planManager.GetList(villageId);
             var accountId = AccountId;
-            var account = context.Accounts.Find(accountId);
-            var village = context.Villages.Find(villageId);
-            var jsonString = JsonSerializer.Serialize(queueBuildings);
             var svd = new SaveFileDialog
             {
                 InitialDirectory = AppContext.BaseDirectory,
                 Filter = "TBS files (*.tbs)|*.tbs|All files (*.*)|*.*",
                 FilterIndex = 1,
                 RestoreDirectory = true,
-                FileName = $"{village.Name.Replace('.', '_')}_{account.Username}_queuebuildings.tbs",
+                FileName = $"{villageId}_{accountId}_queuebuildings.tbs",
             };
 
             if (svd.ShowDialog() == true)
             {
+                var jsonString = JsonSerializer.Serialize(queueBuildings);
                 File.WriteAllText(svd.FileName, jsonString);
             }
         }
@@ -541,32 +549,5 @@ namespace WPFUI.ViewModels.Tabs.Villages
         public ReactiveCommand<Unit, Unit> ExportCommand { get; }
 
         #endregion Command
-
-        private void Update(ObservableCollection<ListBoxItem> source, List<ListBoxItem> items)
-        {
-            var count = Math.Min(source.Count, items.Count);
-            for (var index = 0; index < count; index++)
-            {
-                var current = source[index];
-                var item = items[index];
-
-                current.CopyFrom(item);
-            }
-
-            if (count == source.Count)
-            {
-                for (var index = count; index < items.Count; index++)
-                {
-                    source.Add(items[index]);
-                }
-            }
-            else
-            {
-                while (source.Count != items.Count)
-                {
-                    source.RemoveAt(source.Count - 1);
-                }
-            }
-        }
     }
 }

@@ -301,6 +301,14 @@ namespace MainCore
                 TroopTimeMin = 50,
                 TroopTimeMax = 70,
                 IsAutoCollectReward = false,
+
+                IsTrainTroopBasedOnRes = false,
+                PerentWarehouseTrainTroop = 50,
+                PercentResForBarrack = 10,
+                PercentResForStable = 10,
+                PercentResForWorkshop = 10,
+                PercentResForGreatBarrack = 10,
+                PercentResForGreatStable = 10,
             });
 
             //VillagesQueueBuildings
@@ -426,10 +434,6 @@ namespace MainCore
                         AutoNPCIron = 1,
                         AutoNPCCrop = 0,
 
-                        TroopTimeMin = 50,
-                        TroopTimeMax = 70,
-                        IsMaxTrain = true,
-
                         BarrackTroop = 0,
                         BarrackTroopTimeMin = 0,
                         BarrackTroopTimeMax = 0,
@@ -441,6 +445,20 @@ namespace MainCore
                         WorkshopTroop = 0,
                         WorkshopTroopTimeMin = 0,
                         WorkshopTroopTimeMax = 0,
+
+                        TroopTimeMin = 50,
+                        TroopTimeMax = 70,
+                        IsMaxTrain = true,
+
+                        IsAutoCollectReward = false,
+
+                        IsTrainTroopBasedOnRes = false,
+                        PerentWarehouseTrainTroop = 50,
+                        PercentResForBarrack = 10,
+                        PercentResForStable = 10,
+                        PercentResForWorkshop = 10,
+                        PercentResForGreatBarrack = 10,
+                        PercentResForGreatStable = 10,
                     });
                 }
             }
@@ -579,6 +597,7 @@ namespace MainCore
                 KeyValuePair.Create(202307102106,"HeroRevive"),
                 KeyValuePair.Create(202307131527,"HeroEquip"),
                 KeyValuePair.Create(202307141348,"AutoCollectReward"),
+                KeyValuePair.Create(202307261652,"TrainTroopBasedOnRes"),
             };
             foreach (var migration in migrations)
             {

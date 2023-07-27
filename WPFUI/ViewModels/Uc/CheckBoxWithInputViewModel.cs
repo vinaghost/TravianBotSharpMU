@@ -1,5 +1,4 @@
 ﻿using ReactiveUI;
-using System.Reactive.Linq;
 using WPFUI.ViewModels.Abstract;
 
 namespace WPFUI.ViewModels.Uc
@@ -8,11 +7,8 @@ namespace WPFUI.ViewModels.Uc
     {
         public void LoadData(bool isChecked, int value)
         {
-            Observable.Start(() =>
-            {
-                IsChecked = isChecked;
-                Value = value;
-            }, RxApp.MainThreadScheduler);
+            IsChecked = isChecked;
+            Value = value;
         }
 
         public (bool, int) GetData()

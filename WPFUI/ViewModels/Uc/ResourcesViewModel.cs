@@ -1,5 +1,4 @@
 ﻿using ReactiveUI;
-using System.Reactive.Linq;
 using WPFUI.ViewModels.Abstract;
 
 namespace WPFUI.ViewModels.Uc
@@ -8,13 +7,10 @@ namespace WPFUI.ViewModels.Uc
     {
         public void LoadData(long wood, long clay, long iron, long crop)
         {
-            Observable.Start(() =>
-            {
-                Wood = wood;
-                Clay = clay;
-                Iron = iron;
-                Crop = crop;
-            }, RxApp.MainThreadScheduler);
+            Wood = wood;
+            Clay = clay;
+            Iron = iron;
+            Crop = crop;
         }
 
         public (long, long, long, long) GetData()

@@ -33,6 +33,8 @@ namespace WPFUI.ViewModels
         private readonly WaitingOverlayViewModel _waitingOverlay;
         private readonly VersionOverlayViewModel _versionOverlay;
 
+        private readonly IServiceScopeFactory _serviceScopeFactory;
+
         private MainLayoutViewModel _mainLayoutViewModel;
 
         public MainLayoutViewModel MainLayoutViewModel
@@ -44,7 +46,7 @@ namespace WPFUI.ViewModels
         public WaitingOverlayViewModel WaitingOverlay => _waitingOverlay;
         public VersionOverlayViewModel VersionOverlay => _versionOverlay;
 
-        public MainWindowViewModel(IPlanManager planManager, ITaskManager taskManager, IChromeManager chromeManager, ILogHelper logHelper, ITimerManager timerManager, IRestClientManager restClientManager, WaitingOverlayViewModel waitingOverlay, IDbContextFactory<AppDbContext> contextFactory, IUseragentManager useragentManager, VersionOverlayViewModel versionViewModel)
+        public MainWindowViewModel(IPlanManager planManager, ITaskManager taskManager, IChromeManager chromeManager, ILogHelper logHelper, ITimerManager timerManager, IRestClientManager restClientManager, WaitingOverlayViewModel waitingOverlay, IDbContextFactory<AppDbContext> contextFactory, IUseragentManager useragentManager, VersionOverlayViewModel versionViewModel, IServiceScopeFactory serviceScopeFactory)
         {
             _planManager = planManager;
             _taskManager = taskManager;
@@ -56,6 +58,7 @@ namespace WPFUI.ViewModels
             _contextFactory = contextFactory;
             _useragentManager = useragentManager;
             _versionOverlay = versionViewModel;
+            _serviceScopeFactory = serviceScopeFactory;
         }
 
         public async Task Load()
@@ -96,12 +99,12 @@ namespace WPFUI.ViewModels
         private void MigrateDatabase()
         {
             using var context = _contextFactory.CreateDbContext();
-            using var scope = App.Container.CreateScope();
+
+            using var scope = _serviceScopeFactory.CreateScope();
             var migrationRunner = scope.ServiceProvider.GetRequiredService<IMigrationRunner>();
             if (!context.Database.EnsureCreated())
             {
                 migrationRunner.MigrateUp();
-                context.UpdateDatabase();
             }
             else
             {

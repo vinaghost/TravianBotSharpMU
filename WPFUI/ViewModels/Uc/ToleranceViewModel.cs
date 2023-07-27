@@ -10,7 +10,7 @@ namespace WPFUI.ViewModels.Uc
     {
         public ToleranceViewModel() : base()
         {
-            Observable.ObserveOn(this.WhenAnyValue(vm => vm.MainValue), RxApp.MainThreadScheduler).Subscribe(x =>
+            this.WhenAnyValue(vm => vm.MainValue).Subscribe(x =>
             {
                 ToleranceMax = x;
                 if (ToleranceValue > x) ToleranceValue = x;
@@ -19,11 +19,8 @@ namespace WPFUI.ViewModels.Uc
 
         public void LoadData(int min, int max)
         {
-            Observable.Start(() =>
-            {
-                MainValue = (max + min) / 2;
-                ToleranceValue = (max - min) / 2;
-            }, RxApp.MainThreadScheduler);
+            MainValue = (max + min) / 2;
+            ToleranceValue = (max - min) / 2;
         }
 
         public (int, int) GetData()

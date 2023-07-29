@@ -44,7 +44,7 @@ namespace MainCore.Tasks.FunctionTasks
             foreach (var building in _buildings)
             {
                 _logHelper.Information(AccountId, $"Start train in {building}");
-                result = _trainTroopHelper.Execute(AccountId, VillageId, building);
+                result = _trainTroopHelper.ExecuteTimer(AccountId, VillageId, building);
                 if (result.IsFailed)
                 {
                     if (result.HasError<NoResource>())
@@ -66,25 +66,23 @@ namespace MainCore.Tasks.FunctionTasks
             var setting = context.VillagesSettings.Find(VillageId);
 
             _buildings.Clear();
-            if (setting.BarrackTroop != 0)
+            if (setting.IsBarrack)
             {
                 _buildings.Add(BuildingEnums.Barracks);
-                if (setting.IsGreatBarrack)
-                {
-                    _buildings.Add(BuildingEnums.GreatBarracks);
-                }
             }
-
-            if (setting.StableTroop != 0)
+            if (setting.IsGreatBarrack)
+            {
+                _buildings.Add(BuildingEnums.GreatBarracks);
+            }
+            if (setting.IsStable)
             {
                 _buildings.Add(BuildingEnums.Stable);
-                if (setting.IsGreatStable)
-                {
-                    _buildings.Add(BuildingEnums.GreatStable);
-                }
             }
-
-            if (setting.WorkshopTroop != 0)
+            if (setting.IsGreatStable)
+            {
+                _buildings.Add(BuildingEnums.GreatStable);
+            }
+            if (setting.IsWorkshop)
             {
                 _buildings.Add(BuildingEnums.Workshop);
             }

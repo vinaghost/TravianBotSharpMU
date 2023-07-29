@@ -8,7 +8,7 @@ namespace MainCore.Helper.Interface
     {
         void DisableSetting(int villageId, BuildingEnums trainBuilding);
 
-        Result Execute(int accountId, int villageId, BuildingEnums trainBuilding);
+        Result ExecuteTimer(int accountId, int villageId, BuildingEnums trainBuilding);
 
         int GetAmountTroop(int accountId, int villageId, BuildingEnums trainBuilding, TimeSpan trainTime);
 

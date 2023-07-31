@@ -304,6 +304,8 @@ namespace WPFUI.ViewModels.Tabs.Villages
 
         private async Task SaveTask()
         {
+            if (!IsSettingValid()) return;
+
             _waitingOverlay.Show("saving account's settings");
             await Task.Run(() =>
             {
@@ -426,6 +428,30 @@ namespace WPFUI.ViewModels.Tabs.Villages
 
             context.Update(settings);
             context.SaveChanges();
+        }
+
+        private bool IsSettingValid()
+        {
+            if (WatchAds.IsChecked)
+            {
+                MessageBox.Show("Watch ads only works if you let bot's chrome on top other program.", "Warning");
+            }
+            if (AutoNPCCrop.IsChecked && AutoNPCResource.IsChecked)
+            {
+                MessageBox.Show("You can't use both auto npc crop and auto npc resource.", "Warning");
+                return false;
+            }
+            if ((AutoNPCCrop.IsChecked || AutoNPCResource.IsChecked) && !IsAutoRefresh)
+            {
+                MessageBox.Show("You can't use auto npc if auto refresh is disable.", "Warning");
+                return false;
+            }
+            if (IsAutoClaimQuest && !IsAutoRefresh)
+            {
+                MessageBox.Show("You can't use auto claim quest if auto refresh is disable.", "Warning");
+                return false;
+            }
+            return true;
         }
 
         private void TaskBasedSetting(int villageId, int accountId)

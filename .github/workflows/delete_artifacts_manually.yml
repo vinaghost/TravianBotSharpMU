@@ -1,6 +1,7 @@
 name: Delete old artifacts mannually
 # Run action manually
-on: [workflow_dispatch]
+on:
+  workflow_dispatch:
 
 jobs:
   delete:

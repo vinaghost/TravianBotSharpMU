@@ -3,11 +3,13 @@ using HtmlAgilityPack;
 using MainCore.Enums;
 using MainCore.Errors;
 using MainCore.Helper.Interface;
+using MainCore.Models.Runtime;
 using MainCore.Parsers.Interface;
 using MainCore.Services.Interface;
 using Microsoft.EntityFrameworkCore;
 using OpenQA.Selenium;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace MainCore.Helper.Implementations.Base
@@ -22,17 +24,19 @@ namespace MainCore.Helper.Implementations.Base
         private readonly IChromeManager _chromeManager;
 
         private readonly ITrainTroopParser _trainTroopParser;
+        private readonly INPCHelper _npcHelper;
 
-        public TrainTroopHelper(IDbContextFactory<AppDbContext> contextFactory, IGeneralHelper generalHelper, ILogHelper logHelper, IChromeManager chromeManager, ITrainTroopParser trainTroopParser)
+        public TrainTroopHelper(IDbContextFactory<AppDbContext> contextFactory, IGeneralHelper generalHelper, ILogHelper logHelper, IChromeManager chromeManager, ITrainTroopParser trainTroopParser, INPCHelper npcHelper)
         {
             _contextFactory = contextFactory;
             _generalHelper = generalHelper;
             _logHelper = logHelper;
             _chromeManager = chromeManager;
             _trainTroopParser = trainTroopParser;
+            _npcHelper = npcHelper;
         }
 
-        public Result Execute(int accountId, int villageId, BuildingEnums trainBuilding)
+        public Result ExecuteTimer(int accountId, int villageId, BuildingEnums trainBuilding)
         {
             var result = _generalHelper.ToDorf2(accountId, villageId);
             if (result.IsFailed) return result.WithError(new Trace(Trace.TraceMessage()));
@@ -72,10 +76,126 @@ namespace MainCore.Helper.Implementations.Base
                 }
             }
 
-            _logHelper.Information(accountId, $"Training {amountTroop} {troop}(s)");
+            _logHelper.Information(accountId, $"Training {amountTroop} {(TroopEnums)troop}(s)");
             result = InputAmountTroop(accountId, troop, amountTroop);
             if (result.IsFailed) return result.WithError(new Trace(Trace.TraceMessage()));
             return Result.Ok();
+        }
+
+        public Result ExecuteResource(int accountId, int villageId)
+        {
+            var dataList = GetData(villageId);
+            var totalResource = new Resources();
+            foreach (var data in dataList)
+            {
+                var (building, _, percent, troop, amount) = data;
+                _logHelper.Information(accountId, $"Training {amount} {troop} in {building} (cost {percent:P2} current resource)");
+
+                totalResource += troop.GetTrainCost() * amount;
+            }
+
+            totalResource.Crop += GetCurrentCrop(villageId);
+            _logHelper.Information(accountId, $"NPC resource before train ({totalResource})");
+
+            var result = _npcHelper.Execute(accountId, villageId, totalResource);
+            if (result.IsFailed) return result.WithError(new Trace(Trace.TraceMessage()));
+
+            foreach (var data in dataList)
+            {
+                var (building, buildingLoc, _, troop, amount) = data;
+                _logHelper.Information(accountId, $"Training {amount} {troop}(s)");
+                result = _generalHelper.ToDorf2(accountId, villageId);
+                if (result.IsFailed) return result.WithError(new Trace(Trace.TraceMessage()));
+
+                result = _generalHelper.ToBuilding(accountId, villageId, buildingLoc);
+                if (result.IsFailed) return result.WithError(new Trace(Trace.TraceMessage()));
+
+                result = InputAmountTroop(accountId, (int)troop, amount);
+                if (result.IsFailed) return result.WithError(new Trace(Trace.TraceMessage()));
+            }
+
+            return Result.Ok();
+        }
+
+        private List<(BuildingEnums, int, double, TroopEnums, int)> GetData(int villageId)
+        {
+            var buildings = new List<BuildingEnums>()
+            {
+                BuildingEnums.Barracks,
+                BuildingEnums.GreatBarracks,
+                BuildingEnums.Stable,
+                BuildingEnums.GreatStable,
+                BuildingEnums.Workshop
+            };
+            var settings = GetResourceSetting(villageId);
+
+            var data = new List<(BuildingEnums, int, double, TroopEnums, int)>();
+
+            // correct percent (building not exist)
+            for (var i = 0; i < 5; i++)
+            {
+                var building = buildings[i];
+                var setting = settings[i];
+                if (setting == 0)
+                {
+                    continue;
+                }
+
+                var locBuilding = GetBuilding(villageId, building);
+                if (locBuilding == -1)
+                {
+                    settings[i] = 0;
+                    continue;
+                }
+            }
+            var resource = GetSumResource(villageId);
+
+            for (var i = 0; i < 5; i++)
+            {
+                var building = buildings[i];
+                var setting = settings[i];
+                if (setting == 0)
+                {
+                    //data.Add((building, -1, 0, TroopEnums.None));
+                    continue;
+                }
+
+                var sum = settings.Sum();
+                var percent = Math.Round((double)setting / sum);
+                var locBuilding = GetBuilding(villageId, building);
+                var troop = (TroopEnums)GetTroopTraining(villageId, building);
+
+                var resourceAllow = (long)(resource * percent);
+                var resourceTroop = troop.GetTrainCost();
+                var amount = resourceAllow / resourceTroop.Sum();
+
+                data.Add((building, locBuilding, percent, troop, (int)amount));
+            }
+
+            return data;
+        }
+
+        private long GetSumResource(int villageId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            var resource = context.VillagesResources.Find(villageId);
+
+            var sum = resource.Wood + resource.Clay + resource.Iron;
+            return sum;
+        }
+
+        private long GetCurrentCrop(int villageId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            var resource = context.VillagesResources.Find(villageId);
+            return resource.Crop;
+        }
+
+        private int[] GetResourceSetting(int villageId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            var setting = context.VillagesSettings.FirstOrDefault(x => x.VillageId == villageId);
+            return new int[5] { setting.PercentResForBarrack, setting.PercentResForGreatBarrack, setting.PercentResForStable, setting.PercentResForGreatStable, setting.PercentResForWorkshop };
         }
 
         public int GetBuilding(int villageId, BuildingEnums trainBuilding)
@@ -94,7 +214,7 @@ namespace MainCore.Helper.Implementations.Base
             switch (trainBuilding)
             {
                 case BuildingEnums.Barracks:
-                    setting.BarrackTroop = 0;
+                    setting.IsBarrack = false;
                     break;
 
                 case BuildingEnums.GreatBarracks:
@@ -102,7 +222,7 @@ namespace MainCore.Helper.Implementations.Base
                     break;
 
                 case BuildingEnums.Stable:
-                    setting.StableTroop = 0;
+                    setting.IsStable = false;
                     break;
 
                 case BuildingEnums.GreatStable:
@@ -110,7 +230,7 @@ namespace MainCore.Helper.Implementations.Base
                     break;
 
                 case BuildingEnums.Workshop:
-                    setting.WorkshopTroop = 0;
+                    setting.IsWorkshop = false;
                     break;
 
                 default:
@@ -129,7 +249,7 @@ namespace MainCore.Helper.Implementations.Base
                 BuildingEnums.Barracks or BuildingEnums.GreatBarracks => setting.BarrackTroop,
                 BuildingEnums.Stable or BuildingEnums.GreatStable => setting.StableTroop,
                 BuildingEnums.Workshop => setting.WorkshopTroop,
-                _ => -1,
+                _ => 0,
             };
         }
 
@@ -163,13 +283,19 @@ namespace MainCore.Helper.Implementations.Base
             switch (trainBuilding)
             {
                 case BuildingEnums.Barracks:
-                case BuildingEnums.GreatBarracks:
                     timeTrainMinutes = Random.Shared.Next(setting.BarrackTroopTimeMin, setting.BarrackTroopTimeMax);
                     break;
 
+                case BuildingEnums.GreatBarracks:
+                    timeTrainMinutes = Random.Shared.Next(setting.GreatBarrackTroopTimeMin, setting.GreatBarrackTroopTimeMax);
+                    break;
+
                 case BuildingEnums.Stable:
-                case BuildingEnums.GreatStable:
                     timeTrainMinutes = Random.Shared.Next(setting.StableTroopTimeMin, setting.StableTroopTimeMax);
+                    break;
+
+                case BuildingEnums.GreatStable:
+                    timeTrainMinutes = Random.Shared.Next(setting.GreatStableTroopTimeMin, setting.GreatStableTroopTimeMax);
                     break;
 
                 case BuildingEnums.Workshop:

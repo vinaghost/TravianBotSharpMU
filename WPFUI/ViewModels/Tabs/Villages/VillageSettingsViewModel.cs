@@ -42,6 +42,8 @@ namespace WPFUI.ViewModels.Tabs.Villages
             ImportCommand = ReactiveCommand.Create(ImportTask);
         }
 
+        #region build settings
+
         private bool _useHeroRes;
 
         public bool UseHeroRes
@@ -61,6 +63,10 @@ namespace WPFUI.ViewModels.Tabs.Villages
         public CheckBoxWithInputViewModel AutoComplete { get; } = new();
         public CheckBoxWithInputViewModel WatchAds { get; } = new();
 
+        #endregion build settings
+
+        #region refresh setting
+
         private bool _isAutoRefresh;
 
         public bool IsAutoRefresh
@@ -70,6 +76,10 @@ namespace WPFUI.ViewModels.Tabs.Villages
         }
 
         public ToleranceViewModel AutoRefresh { get; } = new();
+
+        #endregion refresh setting
+
+        #region NPC settings
 
         public CheckBoxWithInputViewModel AutoNPCCrop { get; } = new();
         public CheckBoxWithInputViewModel AutoNPCResource { get; } = new();
@@ -82,6 +92,29 @@ namespace WPFUI.ViewModels.Tabs.Villages
         }
 
         public ResourcesViewModel RatioNPC { get; } = new();
+
+        #endregion NPC settings
+
+        #region Train troop settings
+
+        public TroopSelectorViewModel BarrackTraining { get; } = new();
+        public TroopSelectorViewModel StableTraining { get; } = new();
+        public TroopSelectorViewModel WorkshopTraining { get; } = new();
+
+        #endregion Train troop settings
+
+        #region Train troop based on timer
+
+        private bool _isEnableTrainTroopBasedOnTimer;
+
+        public bool IsEnableTrainTroopBasedOnTimer
+        {
+            get => _isEnableTrainTroopBasedOnTimer;
+            set => this.RaiseAndSetIfChanged(ref _isEnableTrainTroopBasedOnTimer, value);
+        }
+
+        public ToleranceViewModel TimeTrain { get; } = new();
+
         private bool _isMaxTrain;
 
         public bool IsMaxTrain
@@ -90,10 +123,105 @@ namespace WPFUI.ViewModels.Tabs.Villages
             set => this.RaiseAndSetIfChanged(ref _isMaxTrain, value);
         }
 
-        public ToleranceViewModel TimeTrain { get; } = new();
-        public TroopTrainingSelectorViewModel BarrackTraining { get; } = new();
-        public TroopTrainingSelectorViewModel StableTraining { get; } = new();
-        public TroopTrainingSelectorViewModel WorkshopTraining { get; } = new();
+        private bool _isBarrackTrain;
+
+        public bool IsBarrackTrain
+        {
+            get => _isBarrackTrain;
+            set => this.RaiseAndSetIfChanged(ref _isBarrackTrain, value);
+        }
+
+        public ToleranceViewModel BarrackFillTime { get; } = new();
+
+        private bool _isStableTrain;
+
+        public bool IsStableTrain
+        {
+            get => _isStableTrain;
+            set => this.RaiseAndSetIfChanged(ref _isStableTrain, value);
+        }
+
+        public ToleranceViewModel StableFillTime { get; } = new();
+
+        private bool _isWorkshopTrain;
+
+        public bool IsWorkshopTrain
+        {
+            get => _isWorkshopTrain;
+            set => this.RaiseAndSetIfChanged(ref _isWorkshopTrain, value);
+        }
+
+        public ToleranceViewModel WorkshopFillTime { get; } = new();
+
+        private bool _isGreatBarrackTrain;
+
+        public bool IsGreatBarrackTrain
+        {
+            get => _isGreatBarrackTrain;
+            set => this.RaiseAndSetIfChanged(ref _isGreatBarrackTrain, value);
+        }
+
+        public ToleranceViewModel GreatBarrackFillTime { get; } = new();
+
+        private bool _isGreatStableTrain;
+
+        public bool IsGreatStableTrain
+        {
+            get => _isGreatStableTrain;
+            set => this.RaiseAndSetIfChanged(ref _isGreatStableTrain, value);
+        }
+
+        public ToleranceViewModel GreatStableFillTime { get; } = new();
+
+        #endregion Train troop based on timer
+
+        #region Train troop based on resource
+
+        public CheckBoxWithInputViewModel TrainTroopBasedOnResource { get; } = new();
+
+        private int _percentResForBarrack;
+
+        public int PercentResForBarrack
+        {
+            get => _percentResForBarrack;
+            set => this.RaiseAndSetIfChanged(ref _percentResForBarrack, value);
+        }
+
+        private int _percentResForStable;
+
+        public int PercentResForStable
+        {
+            get => _percentResForStable;
+            set => this.RaiseAndSetIfChanged(ref _percentResForStable, value);
+        }
+
+        private int _percentResForWorkshop;
+
+        public int PercentResForWorkshop
+        {
+            get => _percentResForWorkshop;
+            set => this.RaiseAndSetIfChanged(ref _percentResForWorkshop, value);
+        }
+
+        private int _percentResForGreatBarrack;
+
+        public int PercentResForGreatBarrack
+        {
+            get => _percentResForGreatBarrack;
+            set => this.RaiseAndSetIfChanged(ref _percentResForGreatBarrack, value);
+        }
+
+        private int _percentResForGreatStable;
+
+        public int PercentResForGreatStable
+        {
+            get => _percentResForGreatStable;
+            set => this.RaiseAndSetIfChanged(ref _percentResForGreatStable, value);
+        }
+
+        #endregion Train troop based on resource
+
+        #region Quest settings
 
         private bool _isAutoClaimQuest;
 
@@ -102,6 +230,8 @@ namespace WPFUI.ViewModels.Tabs.Villages
             get => _isAutoClaimQuest;
             set => this.RaiseAndSetIfChanged(ref _isAutoClaimQuest, value);
         }
+
+        #endregion Quest settings
 
         protected override void Init(int villageId)
         {
@@ -140,18 +270,42 @@ namespace WPFUI.ViewModels.Tabs.Villages
 
                     RatioNPC.LoadData(settings.AutoNPCWood, settings.AutoNPCClay, settings.AutoNPCIron, settings.AutoNPCCrop);
 
+                    BarrackTraining.LoadData(tribe.GetInfantryTroops().Select(x => new TroopInfo(x)), (TroopEnums)settings.BarrackTroop);
+                    StableTraining.LoadData(tribe.GetCavalryTroops().Select(x => new TroopInfo(x)), (TroopEnums)settings.StableTroop);
+                    WorkshopTraining.LoadData(tribe.GetSiegeTroops().Select(x => new TroopInfo(x)), (TroopEnums)settings.WorkshopTroop);
+
                     TimeTrain.LoadData(settings.TroopTimeMin, settings.TroopTimeMax);
                     IsMaxTrain = settings.IsMaxTrain;
 
-                    BarrackTraining.LoadData(tribe.GetInfantryTroops().Select(x => new TroopInfo(x)), (TroopEnums)settings.BarrackTroop, settings.BarrackTroopTimeMin, settings.BarrackTroopTimeMax, settings.IsGreatBarrack);
-                    StableTraining.LoadData(tribe.GetCavalryTroops().Select(x => new TroopInfo(x)), (TroopEnums)settings.StableTroop, settings.StableTroopTimeMin, settings.StableTroopTimeMax, settings.IsGreatStable);
-                    WorkshopTraining.LoadData(tribe.GetSiegeTroops().Select(x => new TroopInfo(x)), (TroopEnums)settings.WorkshopTroop, settings.WorkshopTroopTimeMin, settings.WorkshopTroopTimeMax, false);
+                    IsEnableTrainTroopBasedOnTimer = settings.IsTrainTroopBasedOnTimer;
+
+                    IsBarrackTrain = settings.IsBarrack;
+                    IsStableTrain = settings.IsStable;
+                    IsWorkshopTrain = settings.IsWorkshop;
+                    IsGreatBarrackTrain = settings.IsGreatBarrack;
+                    IsGreatStableTrain = settings.IsGreatStable;
+
+                    BarrackFillTime.LoadData(settings.BarrackTroopTimeMin, settings.BarrackTroopTimeMax);
+                    StableFillTime.LoadData(settings.StableTroopTimeMin, settings.StableTroopTimeMax);
+                    WorkshopFillTime.LoadData(settings.WorkshopTroopTimeMin, settings.WorkshopTroopTimeMax);
+                    GreatBarrackFillTime.LoadData(settings.GreatBarrackTroopTimeMin, settings.GreatBarrackTroopTimeMax);
+                    GreatStableFillTime.LoadData(settings.GreatStableTroopTimeMin, settings.GreatStableTroopTimeMax);
+
+                    TrainTroopBasedOnResource.LoadData(settings.IsTrainTroopBasedOnRes, settings.PercentWarehouseTrainTroop);
+                    PercentResForBarrack = settings.PercentResForBarrack;
+                    PercentResForStable = settings.PercentResForStable;
+                    PercentResForWorkshop = settings.PercentResForWorkshop;
+                    PercentResForGreatBarrack = settings.PercentResForGreatBarrack;
+                    PercentResForGreatStable = settings.PercentResForGreatStable;
+
                     IsAutoClaimQuest = settings.IsAutoCollectReward;
                 });
         }
 
         private async Task SaveTask()
         {
+            if (!IsSettingValid()) return;
+
             _waitingOverlay.Show("saving account's settings");
             await Task.Run(() =>
             {
@@ -239,20 +393,65 @@ namespace WPFUI.ViewModels.Tabs.Villages
 
             (settings.AutoNPCWood, settings.AutoNPCClay, settings.AutoNPCIron, settings.AutoNPCCrop) = RatioNPC.GetData();
 
+            TroopEnums troop;
+            troop = BarrackTraining.GetData();
+            settings.BarrackTroop = (int)troop;
+            troop = StableTraining.GetData();
+            settings.StableTroop = (int)troop;
+            troop = WorkshopTraining.GetData();
+            settings.WorkshopTroop = (int)troop;
+
             (settings.TroopTimeMin, settings.TroopTimeMax) = TimeTrain.GetData();
             settings.IsMaxTrain = IsMaxTrain;
 
-            TroopEnums troop;
-            (troop, settings.BarrackTroopTimeMin, settings.BarrackTroopTimeMax, settings.IsGreatBarrack) = BarrackTraining.GetData();
-            settings.BarrackTroop = (int)troop;
-            (troop, settings.StableTroopTimeMin, settings.StableTroopTimeMax, settings.IsGreatStable) = StableTraining.GetData();
-            settings.StableTroop = (int)troop;
-            (troop, settings.WorkshopTroopTimeMin, settings.WorkshopTroopTimeMax, _) = WorkshopTraining.GetData();
-            settings.WorkshopTroop = (int)troop;
+            settings.IsTrainTroopBasedOnRes = IsEnableTrainTroopBasedOnTimer;
+            settings.IsBarrack = IsBarrackTrain;
+            settings.IsStable = IsStableTrain;
+            settings.IsWorkshop = IsWorkshopTrain;
+            settings.IsGreatBarrack = IsGreatBarrackTrain;
+            settings.IsGreatStable = IsGreatStableTrain;
+
+            (settings.BarrackTroopTimeMax, settings.BarrackTroopTimeMin) = BarrackFillTime.GetData();
+            (settings.StableTroopTimeMax, settings.StableTroopTimeMin) = StableFillTime.GetData();
+            (settings.WorkshopTroopTimeMax, settings.WorkshopTroopTimeMin) = WorkshopFillTime.GetData();
+            (settings.GreatBarrackTroopTimeMax, settings.GreatBarrackTroopTimeMin) = GreatBarrackFillTime.GetData();
+            (settings.GreatStableTroopTimeMax, settings.GreatStableTroopTimeMin) = GreatStableFillTime.GetData();
+
+            (settings.IsTrainTroopBasedOnRes, settings.PercentWarehouseTrainTroop) = TrainTroopBasedOnResource.GetData();
+            settings.PercentResForBarrack = PercentResForBarrack;
+            settings.PercentResForStable = PercentResForStable;
+            settings.PercentResForWorkshop = PercentResForWorkshop;
+            settings.PercentResForGreatBarrack = PercentResForGreatBarrack;
+            settings.PercentResForGreatStable = PercentResForGreatStable;
+
             settings.IsAutoCollectReward = IsAutoClaimQuest;
 
             context.Update(settings);
             context.SaveChanges();
+        }
+
+        private bool IsSettingValid()
+        {
+            if (WatchAds.IsChecked)
+            {
+                MessageBox.Show("Watch ads only works if you let bot's chrome on top other program.", "Warning");
+            }
+            if (AutoNPCCrop.IsChecked && AutoNPCResource.IsChecked)
+            {
+                MessageBox.Show("You can't use both auto npc crop and auto npc resource.", "Warning");
+                return false;
+            }
+            if ((AutoNPCCrop.IsChecked || AutoNPCResource.IsChecked) && !IsAutoRefresh)
+            {
+                MessageBox.Show("You can't use auto npc if auto refresh is disable.", "Warning");
+                return false;
+            }
+            if (IsAutoClaimQuest && !IsAutoRefresh)
+            {
+                MessageBox.Show("You can't use auto claim quest if auto refresh is disable.", "Warning");
+                return false;
+            }
+            return true;
         }
 
         private void TaskBasedSetting(int villageId, int accountId)

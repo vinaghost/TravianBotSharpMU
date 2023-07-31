@@ -55,20 +55,39 @@ namespace MainCore.Models.Database
             UpgradeTroop = result.ToString();
         }
 
+        public int BarrackTroop { get; set; }
+        public int StableTroop { get; set; }
+        public int WorkshopTroop { get; set; }
+
+        public bool IsTrainTroopBasedOnTimer { get; set; }
         public int TroopTimeMin { get; set; }
         public int TroopTimeMax { get; set; }
         public bool IsMaxTrain { get; set; }
-        public int BarrackTroop { get; set; }
+
+        public bool IsBarrack { get; set; }
         public int BarrackTroopTimeMin { get; set; }
         public int BarrackTroopTimeMax { get; set; }
         public bool IsGreatBarrack { get; set; }
-        public int StableTroop { get; set; }
+        public int GreatBarrackTroopTimeMin { get; set; }
+        public int GreatBarrackTroopTimeMax { get; set; }
+        public bool IsStable { get; set; }
         public int StableTroopTimeMin { get; set; }
         public int StableTroopTimeMax { get; set; }
         public bool IsGreatStable { get; set; }
-        public int WorkshopTroop { get; set; }
+        public int GreatStableTroopTimeMin { get; set; }
+        public int GreatStableTroopTimeMax { get; set; }
+        public bool IsWorkshop { get; set; }
         public int WorkshopTroopTimeMin { get; set; }
         public int WorkshopTroopTimeMax { get; set; }
+
+        public bool IsTrainTroopBasedOnRes { get; set; }
+        public int PercentWarehouseTrainTroop { get; set; }
+
+        public int PercentResForBarrack { get; set; }
+        public int PercentResForStable { get; set; }
+        public int PercentResForWorkshop { get; set; }
+        public int PercentResForGreatBarrack { get; set; }
+        public int PercentResForGreatStable { get; set; }
 
         public bool IsAutoCollectReward { get; set; }
     }

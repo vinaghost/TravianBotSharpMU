@@ -195,6 +195,7 @@ namespace WPFUI.ViewModels.Tabs
 
         private async Task SaveTask()
         {
+            if (!IsSettingValid()) return;
             _waitingOverlay.Show("saving account's settings");
 
             await Task.Run(() =>

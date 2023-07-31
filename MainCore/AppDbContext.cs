@@ -288,18 +288,38 @@ namespace MainCore
                 AutoNPCCrop = 0,
 
                 BarrackTroop = 0,
-                BarrackTroopTimeMin = 0,
-                BarrackTroopTimeMax = 0,
-                IsGreatBarrack = false,
                 StableTroop = 0,
-                StableTroopTimeMin = 0,
-                StableTroopTimeMax = 0,
-                IsGreatStable = false,
                 WorkshopTroop = 0,
-                WorkshopTroopTimeMin = 0,
-                WorkshopTroopTimeMax = 0,
+
+                IsTrainTroopBasedOnTimer = false,
                 TroopTimeMin = 50,
                 TroopTimeMax = 70,
+                IsMaxTrain = false,
+
+                IsBarrack = false,
+                BarrackTroopTimeMin = 50,
+                BarrackTroopTimeMax = 70,
+                IsGreatBarrack = false,
+                GreatBarrackTroopTimeMin = 50,
+                GreatBarrackTroopTimeMax = 70,
+                IsStable = false,
+                StableTroopTimeMin = 50,
+                StableTroopTimeMax = 70,
+                IsGreatStable = false,
+                GreatStableTroopTimeMin = 50,
+                GreatStableTroopTimeMax = 70,
+                IsWorkshop = false,
+                WorkshopTroopTimeMin = 50,
+                WorkshopTroopTimeMax = 70,
+
+                IsTrainTroopBasedOnRes = false,
+                PercentWarehouseTrainTroop = 50,
+                PercentResForBarrack = 10,
+                PercentResForStable = 10,
+                PercentResForWorkshop = 10,
+                PercentResForGreatBarrack = 10,
+                PercentResForGreatStable = 10,
+
                 IsAutoCollectReward = false,
             });
 
@@ -331,164 +351,6 @@ namespace MainCore
                 Id = farmId,
                 IsActive = false,
             });
-        }
-
-        public void UpdateDatabase()
-        {
-            if (!AccountsInfo.Any())
-            {
-                foreach (var account in Accounts)
-                {
-                    var accountId = account.Id;
-                    AccountsInfo.Add(new AccountInfo { AccountId = accountId });
-                }
-            }
-            if (!AccountsSettings.Any())
-            {
-                foreach (var account in Accounts)
-                {
-                    var accountId = account.Id;
-                    AccountsSettings.Add(new AccountSetting
-                    {
-                        AccountId = accountId,
-                        ClickDelayMin = 500,
-                        ClickDelayMax = 900,
-                        TaskDelayMin = 1000,
-                        TaskDelayMax = 1500,
-                        WorkTimeMin = 340,
-                        WorkTimeMax = 380,
-                        SleepTimeMin = 480,
-                        SleepTimeMax = 600,
-                        IsClosedIfNoTask = false,
-                        IsDontLoadImage = false,
-                        IsMinimized = false,
-                        IsAutoAdventure = false,
-                        IsSleepBetweenProxyChanging = false,
-                        FarmIntervalMax = 610,
-                        FarmIntervalMin = 590,
-                    });
-                }
-            }
-
-            if (!Heroes.Any())
-            {
-                foreach (var account in Accounts)
-                {
-                    var accountId = account.Id;
-                    Heroes.Add(new Hero { AccountId = accountId });
-                }
-            }
-
-            if (!VillagesResources.Any())
-            {
-                foreach (var village in Villages)
-                {
-                    var villageId = village.Id;
-                    VillagesResources.Add(new VillageResources { VillageId = villageId });
-                }
-            }
-
-            if (!VillagesUpdateTime.Any())
-            {
-                foreach (var village in Villages)
-                {
-                    var villageId = village.Id;
-                    VillagesUpdateTime.Add(new VillageUpdateTime { VillageId = villageId });
-                }
-            }
-
-            if (!VillagesSettings.Any())
-            {
-                foreach (var village in Villages)
-                {
-                    var villageId = village.Id;
-                    VillagesSettings.Add(new VillageSetting
-                    {
-                        VillageId = villageId,
-                        IsAdsUpgrade = false,
-                        AdsUpgradeTime = 5,
-
-                        IsUseHeroRes = false,
-
-                        IsInstantComplete = false,
-                        InstantCompleteTime = 30,
-
-                        IsAutoRefresh = false,
-                        AutoRefreshTimeMin = 25,
-                        AutoRefreshTimeMax = 35,
-
-                        IsAutoNPC = false,
-                        IsAutoNPCWarehouse = false,
-                        AutoNPCPercent = 90,
-                        AutoNPCWarehousePercent = 90,
-                        AutoNPCWood = 1,
-                        AutoNPCClay = 1,
-                        AutoNPCIron = 1,
-                        AutoNPCCrop = 0,
-
-                        TroopTimeMin = 50,
-                        TroopTimeMax = 70,
-                        IsMaxTrain = true,
-
-                        BarrackTroop = 0,
-                        BarrackTroopTimeMin = 0,
-                        BarrackTroopTimeMax = 0,
-                        IsGreatBarrack = false,
-                        StableTroop = 0,
-                        StableTroopTimeMin = 0,
-                        StableTroopTimeMax = 0,
-                        IsGreatStable = false,
-                        WorkshopTroop = 0,
-                        WorkshopTroopTimeMin = 0,
-                        WorkshopTroopTimeMax = 0,
-                    });
-                }
-            }
-            if (!VillagesProduction.Any())
-            {
-                foreach (var village in Villages)
-                {
-                    var villageId = village.Id;
-                    VillagesProduction.Add(new VillageProduction { VillageId = villageId });
-                }
-            }
-
-            if (!FarmsSettings.Any())
-            {
-                foreach (var farm in Farms)
-                {
-                    var farmId = farm.Id;
-                    FarmsSettings.Add(new FarmSetting
-                    {
-                        Id = farmId,
-                        IsActive = false,
-                    });
-                }
-            }
-
-            if (!VillagesTroops.Any())
-            {
-                foreach (var account in Accounts)
-                {
-                    var tribe = AccountsInfo.Find(account.Id).Tribe;
-                    var troops = tribe.GetTroops();
-                    var villages = Villages.Where(x => x.AccountId == account.Id).ToList();
-                    foreach (var village in villages)
-                    {
-                        for (int i = 0; i < troops.Count; i++)
-                        {
-                            var level = -1;
-                            if (i == 0) level = 0;
-                            VillagesTroops.Add(new VillageTroops
-                            {
-                                Id = (int)troops[i],
-                                VillageId = village.Id,
-                                Level = level,
-                            });
-                        }
-                    }
-                }
-            }
         }
 
         public void DeleteAccount(int accountId)
@@ -579,6 +441,8 @@ namespace MainCore
                 KeyValuePair.Create(202307102106,"HeroRevive"),
                 KeyValuePair.Create(202307131527,"HeroEquip"),
                 KeyValuePair.Create(202307141348,"AutoCollectReward"),
+                KeyValuePair.Create(202307261652,"TrainTroopBasedOnRes"),
+                KeyValuePair.Create(202307272158,"TrainTroopBasedOnTimer"),
             };
             foreach (var migration in migrations)
             {

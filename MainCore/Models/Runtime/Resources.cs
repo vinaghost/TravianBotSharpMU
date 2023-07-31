@@ -42,6 +42,11 @@ namespace MainCore.Models.Runtime
             if (Crop < 0) Crop = 0;
         }
 
+        public long Sum()
+        {
+            return Wood + Clay + Iron + Crop;
+        }
+
         public override string ToString()
         {
             return $"Wood: {Wood}, Clay: {Clay}, Iron: {Iron}, Crop: {Crop}";
@@ -95,14 +100,29 @@ namespace MainCore.Models.Runtime
             return new Resources(a.Wood - b.Wood, a.Clay - b.Clay, a.Iron - b.Iron, a.Crop - b.Crop);
         }
 
+        public static Resources operator +(Resources a, Resources b)
+        {
+            return new Resources(a.Wood + b.Wood, a.Clay + b.Clay, a.Iron + b.Iron, a.Crop + b.Crop);
+        }
+
         public static Resources operator -(Resources a, Resources b)
         {
             return new Resources(a.Wood - b.Wood, a.Clay - b.Clay, a.Iron - b.Iron, a.Crop - b.Crop);
         }
 
+        public static Resources operator +(VillageResources a, Resources b)
+        {
+            return new Resources(a.Wood + b.Wood, a.Clay + b.Clay, a.Iron + b.Iron, a.Crop + b.Crop);
+        }
+
         public static Resources operator -(VillageResources a, Resources b)
         {
             return new Resources(a.Wood - b.Wood, a.Clay - b.Clay, a.Iron - b.Iron, a.Crop - b.Crop);
+        }
+
+        public static Resources operator *(Resources a, int multipler)
+        {
+            return new Resources(a.Wood * multipler, a.Clay * multipler, a.Iron * multipler, a.Crop * multipler);
         }
     }
 }

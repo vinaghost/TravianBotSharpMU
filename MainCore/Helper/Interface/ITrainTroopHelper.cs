@@ -7,8 +7,8 @@ namespace MainCore.Helper.Interface
     public interface ITrainTroopHelper
     {
         void DisableSetting(int villageId, BuildingEnums trainBuilding);
-
-        Result Execute(int accountId, int villageId, BuildingEnums trainBuilding);
+        Result ExecuteResource(int accountId, int villageId);
+        Result ExecuteTimer(int accountId, int villageId, BuildingEnums trainBuilding);
 
         int GetAmountTroop(int accountId, int villageId, BuildingEnums trainBuilding, TimeSpan trainTime);
 

@@ -4,6 +4,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:views="clr-namespace:WPFUI.Views.Tabs.Villages"
         xmlns:controls="clr-namespace:WPFUI.Views.Uc"
+    xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes">
     <Grid>
         <Grid.RowDefinitions>
@@ -31,6 +32,7 @@
                 <Border Style="{DynamicResource Box}">
                     <StackPanel>
                         <TextBlock TextWrapping="Wrap" Text="Build settings" VerticalAlignment="Center" FontWeight="Bold" />
+
                         <CheckBox x:Name="UseHeroResCheckBox" Content="Use resource from hero inventory" />
                         <CheckBox x:Name="IgnoreRomanAdvantageCheckBox" Content="Ignore Roman tribe's advantage" />
                         <controls:CheckBoxWithInputUc x:Name="Complete" Text="Auto complete upgrade when queue is longer than" Unit="min(s)" />
@@ -40,6 +42,7 @@
                 <Border Style="{DynamicResource Box}">
                     <StackPanel>
                         <TextBlock TextWrapping="Wrap" Text="Refresh settings" VerticalAlignment="Center" FontWeight="Bold" />
+
                         <CheckBox x:Name="RefreshCheckBox" Content="Auto refresh village" />
                         <controls:ToleranceUc x:Name="Refresh" Text="Refresh interval" Unit="min(s)" />
                     </StackPanel>
@@ -48,6 +51,7 @@
 
                     <StackPanel>
                         <TextBlock TextWrapping="Wrap" Text="NPC settings" VerticalAlignment="Center" FontWeight="Bold" />
+
                         <controls:CheckBoxWithInputUc x:Name="AutoNPC" Text="Auto NPC when crop is more than" Unit="% of granary (this need auto refresh)" />
                         <controls:CheckBoxWithInputUc x:Name="AutoNPCWarehouse" Text="Auto NPC when any resource is more than" Unit="% of warehouse (this need auto refresh)" />
                         <CheckBox x:Name="NPCCheckBox" Content="NPC even if after NPC resource is overflow (this may make TBS stuck)" />
@@ -57,11 +61,58 @@
                 <Border Style="{DynamicResource Box}">
                     <StackPanel>
                         <TextBlock TextWrapping="Wrap" Text="Train troop settings" VerticalAlignment="Center" FontWeight="Bold" Margin="0,0,0,10" />
-                        <controls:ToleranceUc x:Name="TimeTrain" Text="Next train troop execute after" Unit="min(s)" Margin="0,0,0,5" />
-                        <CheckBox x:Name="IsMaxTrain" Content="Train even if don't have enough resources to fullfil queue" Margin="0,0,0,10" />
-                        <controls:TroopTrainingSelectorUc x:Name="BarrackTrain" Text="Barrack" Great="True" Margin="0,0,0,10" />
-                        <controls:TroopTrainingSelectorUc x:Name="StableTrain" Text="Stable" Great="True" Margin="0,0,0,10" />
-                        <controls:TroopTrainingSelectorUc x:Name="WorkshopTrain" Text="Workshop" Great="False" />
+
+                        <controls:TroopSelectorUc x:Name="BarrackTroop" Text="Barrack"  Margin="0,0,0,10" />
+                        <controls:TroopSelectorUc x:Name="StableTroop" Text="Stable"  Margin="0,0,0,10" />
+                        <controls:TroopSelectorUc x:Name="WorkshopTroop" Text="Workshop" />
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{DynamicResource Box}">
+                    <StackPanel>
+                        <TextBlock TextWrapping="Wrap" Text="Train troop based on timer settings" VerticalAlignment="Center" FontWeight="Bold" Margin="0,0,0,10" />
+
+                        <CheckBox x:Name="TrainTroopBasedOnTimer" Content="Enable" Margin="0,10,0,10" />
+                        <controls:ToleranceUc x:Name="TimeTrain" Text="Next train troop execute after" Unit="min(s)" />
+                        <CheckBox x:Name="IsMaxTrain" Content="Train even if don't have enough resources to fullfil queue" />
+
+                        <CheckBox x:Name="BarrackTrain" Content="Enable barrack" Margin="0,10,0,0" />
+                        <controls:ToleranceUc x:Name="FillTimeBarrack" Text="Fill queue for" Unit="min(s)" />
+                        <CheckBox x:Name="StableTrain" Content="Enable stable" Margin="0,5,0,0" />
+                        <controls:ToleranceUc x:Name="FillTimeStable" Text="Fill queue for" Unit="min(s)" />
+                        <CheckBox x:Name="WorkshopTrain" Content="Enable workshop" Margin="0,5,0,0" />
+                        <controls:ToleranceUc x:Name="FillTimeWorkshop" Text="Fill queue for" Unit="min(s)" />
+                        <CheckBox x:Name="GreatBarrackTrain" Content="Enable great barrack" Margin="0,5,0,0" />
+                        <controls:ToleranceUc x:Name="FillTimeGreatBarrack" Text="Fill queue for" Unit="min(s)" />
+                        <CheckBox x:Name="GreatStableTrain" Content="Enable great stable" Margin="0,5,0,0" />
+                        <controls:ToleranceUc x:Name="FillTimeGreatStable" Text="Fill queue for" Unit="min(s)" />
+                    </StackPanel>
+                </Border>
+                <Border Style="{DynamicResource Box}">
+                    <StackPanel>
+                        <TextBlock TextWrapping="Wrap" Text="Train troop based on resource settings" VerticalAlignment="Center" FontWeight="Bold" Margin="0,0,0,10" />
+
+                        <controls:CheckBoxWithInputUc x:Name="TrainTroopBasedOnResource" Text="Auto train troop when any/total resource above " Unit="% of warehouse (this need auto refresh)" />
+                        <StackPanel Orientation="Horizontal">
+                            <Label Content="Percent resource for barrack" />
+                            <xctk:IntegerUpDown x:Name="BarrackResTrain" Minimum="0" Text="Percent resource for barrack" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <Label Content="Percent resource for stable" />
+                            <xctk:IntegerUpDown x:Name="StableResTrain" Minimum="0" Text="Percent resource for stable" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <Label Content="Percent resource for workshop" />
+                            <xctk:IntegerUpDown x:Name="WorkshopResTrain" Minimum="0" Text="Percent resource for workshop" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <Label Content="Percent resource for great barrack" />
+                            <xctk:IntegerUpDown x:Name="GreatBarrackResTrain" Minimum="0" Text="Percent resource for great barrack" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <Label Content="Percent resource for great stable" />
+                            <xctk:IntegerUpDown x:Name="GreatStableResTrain" Minimum="0" Text="Percent resource for great stable" />
+                        </StackPanel>
                     </StackPanel>
                 </Border>
                 <Border Style="{DynamicResource Box}">

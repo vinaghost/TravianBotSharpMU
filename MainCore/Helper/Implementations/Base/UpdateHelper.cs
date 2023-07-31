@@ -65,7 +65,7 @@ namespace MainCore.Helper.Implementations.Base
             if (villageId != -1)
             {
                 UpdateResource(accountId, villageId);
-                TriggerTrainTroop(Account, villageId);
+                TriggerTrainTroop(accountId, villageId);
                 TriggerAutoNPC(accountId, villageId);
                 TriggerAutoClaimReward(accountId, villageId);
             }

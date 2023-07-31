@@ -65,6 +65,7 @@ namespace MainCore.Helper.Implementations.Base
             if (villageId != -1)
             {
                 UpdateResource(accountId, villageId);
+                TriggerTrainTroop(Account, villageId);
                 TriggerAutoNPC(accountId, villageId);
                 TriggerAutoClaimReward(accountId, villageId);
             }
@@ -688,6 +689,27 @@ namespace MainCore.Helper.Implementations.Base
                 }
                 _taskManager.Add<NPCTask>(accountId, villageId);
             }
+        }
+
+        private void TriggerTrainTroop(int accountId, int villageId)
+        {
+            var listTask = _taskManager.GetList(accountId);
+            var tasks = listTask.OfType<TrainTroopBasedOnResourceTask>();
+            if (tasks.Any(x => x.VillageId == villageId)) return;
+
+            using var context = _contextFactory.CreateDbContext();
+            var setting = context.VillagesSettings.Find(villageId);
+            if (!setting.IsTrainTroopBasedOnRes) return;
+
+            var resource = context.VillagesResources.Find(villageId);
+
+            var warehouse = resource.Warehouse;
+            var resources = resource.Wood + resource.Clay + resource.Iron;
+
+            var percent = resources * 100.0f / warehouse;
+
+            if (percent < setting.PercentWarehouseTrainTroop) return;
+            _taskManager.Add<TrainTroopBasedOnResourceTask>(accountId, villageId);
         }
 
         private void TriggerHeroPoint(int accountId)

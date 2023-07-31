@@ -81,7 +81,7 @@ namespace MainCore.Models.Database
         public int WorkshopTroopTimeMax { get; set; }
 
         public bool IsTrainTroopBasedOnRes { get; set; }
-        public int PerentWarehouseTrainTroop { get; set; }
+        public int PercentWarehouseTrainTroop { get; set; }
 
         public int PercentResForBarrack { get; set; }
         public int PercentResForStable { get; set; }

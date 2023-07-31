@@ -8,7 +8,7 @@ namespace MainCore.Migrations
         public override void Down()
         {
             Execute.Sql("ALTER TABLE 'VillagesSettings' DROP COLUMN 'IsTrainTroopBasedOnRes';");
-            Execute.Sql("ALTER TABLE 'VillagesSettings' DROP COLUMN 'PerentWarehouseTrainTroop';");
+            Execute.Sql("ALTER TABLE 'VillagesSettings' DROP COLUMN 'PercentWarehouseTrainTroop';");
             Execute.Sql("ALTER TABLE 'VillagesSettings' DROP COLUMN 'PercentResForBarrack';");
             Execute.Sql("ALTER TABLE 'VillagesSettings' DROP COLUMN 'PercentResForStable';");
             Execute.Sql("ALTER TABLE 'VillagesSettings' DROP COLUMN 'PercentResForWorkshop';");
@@ -20,7 +20,7 @@ namespace MainCore.Migrations
         {
             Alter.Table("VillagesSettings")
                 .AddColumn("IsTrainTroopBasedOnRes").AsBoolean().WithDefaultValue(false)
-                .AddColumn("PerentWarehouseTrainTroop").AsInt32().WithDefaultValue(50)
+                .AddColumn("PercentWarehouseTrainTroop").AsInt32().WithDefaultValue(50)
                 .AddColumn("PercentResForBarrack").AsInt32().WithDefaultValue(10)
                 .AddColumn("PercentResForStable").AsInt32().WithDefaultValue(10)
                 .AddColumn("PercentResForWorkshop").AsInt32().WithDefaultValue(10)

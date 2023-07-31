@@ -32,6 +32,9 @@ namespace MainCore.Tasks.FunctionTasks
             var result = _generalHelper.ToDorf2(AccountId, VillageId, switchVillage: true);
             if (result.IsFailed) return result.WithError(new Trace(Trace.TraceMessage()));
 
+            result = _trainTroopHelper.ExecuteResource(AccountId, VillageId);
+            if (result.IsFailed) return result.WithError(new Trace(Trace.TraceMessage()));
+
             return Result.Ok();
         }
     }

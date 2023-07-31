@@ -291,7 +291,7 @@ namespace WPFUI.ViewModels.Tabs.Villages
                     GreatBarrackFillTime.LoadData(settings.GreatBarrackTroopTimeMin, settings.GreatBarrackTroopTimeMax);
                     GreatStableFillTime.LoadData(settings.GreatStableTroopTimeMin, settings.GreatStableTroopTimeMax);
 
-                    TrainTroopBasedOnResource.LoadData(settings.IsTrainTroopBasedOnRes, settings.PerentWarehouseTrainTroop);
+                    TrainTroopBasedOnResource.LoadData(settings.IsTrainTroopBasedOnRes, settings.PercentWarehouseTrainTroop);
                     PercentResForBarrack = settings.PercentResForBarrack;
                     PercentResForStable = settings.PercentResForStable;
                     PercentResForWorkshop = settings.PercentResForWorkshop;
@@ -415,7 +415,7 @@ namespace WPFUI.ViewModels.Tabs.Villages
             (settings.GreatBarrackTroopTimeMax, settings.GreatBarrackTroopTimeMin) = GreatBarrackFillTime.GetData();
             (settings.GreatStableTroopTimeMax, settings.GreatStableTroopTimeMin) = GreatStableFillTime.GetData();
 
-            (settings.IsTrainTroopBasedOnRes, settings.PerentWarehouseTrainTroop) = TrainTroopBasedOnResource.GetData();
+            (settings.IsTrainTroopBasedOnRes, settings.PercentWarehouseTrainTroop) = TrainTroopBasedOnResource.GetData();
             settings.PercentResForBarrack = PercentResForBarrack;
             settings.PercentResForStable = PercentResForStable;
             settings.PercentResForWorkshop = PercentResForWorkshop;

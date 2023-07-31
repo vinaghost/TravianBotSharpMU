@@ -313,7 +313,7 @@ namespace MainCore
                 WorkshopTroopTimeMax = 70,
 
                 IsTrainTroopBasedOnRes = false,
-                PerentWarehouseTrainTroop = 50,
+                PercentWarehouseTrainTroop = 50,
                 PercentResForBarrack = 10,
                 PercentResForStable = 10,
                 PercentResForWorkshop = 10,
